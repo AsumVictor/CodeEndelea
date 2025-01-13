@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const ErrorHandler = require('./middleware/error.js')
 
 // setup cross orgin resoures sharing
 const corsOptions = {
@@ -28,4 +29,5 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(ErrorHandler)
 module.exports = app;
