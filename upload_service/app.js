@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const ErrorHandler = require('./middleware/error.js')
+const ErrorHandler = require("./middleware/error.js");
+const api_endpoint = require("./routes/index.js")
 
 // setup cross orgin resoures sharing
 const corsOptions = {
@@ -16,11 +17,15 @@ const corsOptions = {
           return callback(null, true);
         }
       : "*",
-   credentials: true,
-   methods: ["POST"]
+  credentials: true,
+  methods: ["POST"],
 };
 
 app.use(cors(corsOptions));
+
+app.use("/", express.static("uploads"));
+
+// handle api routues
 
 // temporary middleware
 app.use((req, res, next) => {
@@ -29,5 +34,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(ErrorHandler)
+// Setup API endpoint 
+
+app.use("/api/v1", api_endpoint)
+
+// Routes for all request not API end-point
+app.all("*", (req, res, next) => {
+  if (req.path == "/") {
+    res.json("Home");
+  } else {
+    res.json("Invalid");
+  }
+  next();
+});
+
+app.use(ErrorHandler);
 module.exports = app;
