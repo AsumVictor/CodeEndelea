@@ -3,8 +3,9 @@ const app = express();
 const cors = require("cors");
 const ErrorHandler = require("./middleware/error.js");
 const api_endpoint = require("./routes/index.js")
+const express_upload = require("express-fileupload")
 
-// setup cross orgin resoures sharing
+// setting up cross orgin resoures sharing
 const corsOptions = {
   origin:
     process.env.NODE_ENV == "PRODUCTION"
@@ -22,19 +23,22 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+// app.use(express_upload())
+
 
 app.use("/", express.static("uploads"));
+app.use(express.json({ limit: "50mb" }));
 
-// handle api routues
+// handling api routues
 
 // temporary middleware
 app.use((req, res, next) => {
   console.log(req.origin);
-  console.log(`incoming request: ${req.path}-${req.url}`);
+  console.log(`incoming request: ${req.path}`);
   next();
 });
 
-// Setup API endpoint 
+// Setting up API endpoint 
 
 app.use("/api/v1", api_endpoint)
 
