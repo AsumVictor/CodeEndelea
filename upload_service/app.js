@@ -4,6 +4,7 @@ const cors = require("cors");
 const ErrorHandler = require("./middleware/error.js");
 const api_endpoint = require("./routes/index.js")
 const express_upload = require("express-fileupload")
+const bodyParser = require("body-parser");
 
 // setting up cross orgin resoures sharing
 const corsOptions = {
@@ -23,17 +24,15 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-// app.use(express_upload())
-
-
+app.use(express_upload())
 app.use("/", express.static("uploads"));
 app.use(express.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // handling api routues
 
 // temporary middleware
 app.use((req, res, next) => {
-  console.log(req.origin);
   console.log(`incoming request: ${req.path}`);
   next();
 });
