@@ -35,6 +35,7 @@ const initialized_upload = catchAsyncError(async (req, res, next) => {
 
 // Here we upload the actual code chunks
 const upload_chunk = catchAsyncError(async (req, res, next) => {
+  console.log("Work")
   try {
     const { filename, chunkIndex, uploadId } = req.body;
 
@@ -55,12 +56,12 @@ const upload_chunk = catchAsyncError(async (req, res, next) => {
       PartNumber: parseInt(chunkIndex) + 1,
       Body: req.file.buffer,
     };
-
+    console.log("work before upload")
     const result = await s3_upload.uploadPart(params).promise();
     console.log("data------- ", result);
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error("Error uploading chunk:", err);
+    console.error("Error uploading chunk:", error);
     return next(new ResponseError(error.message, 400));
   }
 });
@@ -68,7 +69,7 @@ const upload_chunk = catchAsyncError(async (req, res, next) => {
 const complete_upload = catchAsyncError(async (req, res, next) => {
   try {
     console.log("Completing Upload");
-    const { filename, totalChunks, uploadId } = req.body;
+   const { filename, totalChunks, uploadId } = req.body;
 
     const uploadedParts = [];
 

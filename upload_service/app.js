@@ -24,10 +24,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express_upload())
 app.use("/", express.static("uploads"));
+// app.use(express_upload())
 app.use(express.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+// app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // handling api routues
 
