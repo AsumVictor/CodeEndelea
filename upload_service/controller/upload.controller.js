@@ -1,6 +1,7 @@
 const catchAsyncError = require("../middleware/catchAsyncError");
 const aws = require("aws-sdk");
 const ResponseError = require("../utilities/ErrorHandler");
+const videoModel = require("../model/video.model");
 
 // Just initialing the chunking here
 const initialized_upload = catchAsyncError(async (req, res, next) => {
@@ -35,7 +36,7 @@ const initialized_upload = catchAsyncError(async (req, res, next) => {
 
 // Here we upload the actual code chunks
 const upload_chunk = catchAsyncError(async (req, res, next) => {
-  console.log("Work")
+  console.log("Work");
   try {
     const { filename, chunkIndex, uploadId } = req.body;
 
@@ -56,7 +57,7 @@ const upload_chunk = catchAsyncError(async (req, res, next) => {
       PartNumber: parseInt(chunkIndex) + 1,
       Body: req.file.buffer,
     };
-    console.log("work before upload")
+    console.log("work before upload");
     const result = await s3_upload.uploadPart(params).promise();
     console.log("data------- ", result);
     res.status(200).json({ success: true });
@@ -69,7 +70,7 @@ const upload_chunk = catchAsyncError(async (req, res, next) => {
 const complete_upload = catchAsyncError(async (req, res, next) => {
   try {
     console.log("Completing Upload");
-   const { filename, totalChunks, uploadId } = req.body;
+    const { filename, totalChunks, uploadId } = req.body;
 
     const uploadedParts = [];
 
@@ -109,12 +110,32 @@ const complete_upload = catchAsyncError(async (req, res, next) => {
 
     console.log("data----- ", uploadResult);
 
+    // creating data in database
+    // const video = await videoModel.create(video_meta_data)
+
     // await addVideoDetailsToDB(title, description , author, uploadResult.Location);
     // pushVideoForEncodingToKafka(title, uploadResult.Location);
-    return res
-      .status(201)
-      .json({ uploadResult, message: "Uploaded successfully!!!" });
+    return res.status(201).json({ url: uploadResult.Location });
+  } catch (error) {
+    console.log("Error handling complete", error);
+    return next(new ResponseError(error.message, 400));
+  }
+});
 
+const save_to_db = catchAsyncError(async (req, res, next) => {
+  try {
+    console.log("Save video metada");
+    const { title, description, length, screen_url, camera_url } = req.body;
+
+    if (!title || !description || !length || !screen_url || !camera_url) {
+      return next(new ResponseError("Some filds are not completed", 400));
+    }
+
+    // creating data in database
+    const video = await videoModel.create(req.body);
+
+    // pushVideoForEncodingToKafka(title, uploadResult.Location);
+    return res.status(201).json({ data: video });
   } catch (error) {
     console.log("Error handling complete", error);
     return next(new ResponseError(error.message, 400));
@@ -125,4 +146,5 @@ module.exports = {
   initialized_upload,
   upload_chunk,
   complete_upload,
+  save_to_db
 };

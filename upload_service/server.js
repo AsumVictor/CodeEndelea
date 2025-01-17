@@ -1,10 +1,14 @@
+const db_connect = require("./config/db");
 const app = require("./app");
 
 // connect to environment variables
-if(process.env.NODE_ENV !=="PRODUCTION" || process.env.NODE_ENV != "production"){
-   require("dotenv").config({
-    path: "./.env"
-   })
+if (
+  process.env.NODE_ENV !== "PRODUCTION" ||
+  process.env.NODE_ENV != "production"
+) {
+  require("dotenv").config({
+    path: "./.env",
+  });
 }
 
 // Hangling uncatch execptions
@@ -13,8 +17,9 @@ process.on("unCaughtException", (err) => {
   console.log("Server shutting down");
 });
 
-const server = app.listen(process.env.PORT, (err) => {
+const server = app.listen(process.env.PORT, async(err) => {
   // connect to database
+  await db_connect();
   console.log(`Server is running at http://localhost:${process.env.PORT}`);
 });
 // handle promises failure
