@@ -2,7 +2,7 @@ import express from "express";
 const app = express();
 import cors from "cors";
 import ErrorHandler from "./middleware/error.js";
-import api_endpoint from "./routes/index.js"
+import api_endpoint from "./routes/index.js";
 
 
 // setting up cross orgin resoures sharing
@@ -36,9 +36,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Setting up API endpoint 
+// Setting up API endpoint
 
-app.use("/api/v1", api_endpoint)
+app.use("/api/v1", api_endpoint);
+
 
 // Routes for all request not API end-point
 app.all("*", (req, res, next) => {
@@ -49,6 +50,7 @@ app.all("*", (req, res, next) => {
   }
   next();
 });
+
 
 app.use(ErrorHandler);
 export default app;
