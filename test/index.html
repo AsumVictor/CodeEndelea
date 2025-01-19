@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f4f6;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .container input, .container button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .container button {
+            background: linear-gradient(90deg, #6a5af9, #4a90e2);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .container button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form id="uploadForm">
+            <input type="text" id="title" placeholder="Title" required>
+            <input type="text" id="description" placeholder="Description">
+            <input type="text" id="author" placeholder="Author" required>
+            <input type="file" id="file" required>
+            <button type="button" onclick="handleUpload()">Upload</button>
+        </form>
+    </div>
+
+    <script>
+        async function handleUpload() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const author = document.getElementById('author').value;
+            const fileInput = document.getElementById('file');
+            const selectedFile = fileInput.files[0];
+
+            if (!title || !author) {
+                alert('Title and Author are required fields.');
+                return;
+            }
+
+            try {
+                // Step 1: Initialize Upload
+                const initializeFormData = new FormData();
+                initializeFormData.append('filename', selectedFile.name);
+
+                const initializeRes = await axios.post('http://localhost:8080/api/v1/upload/initialize', initializeFormData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                const { upload_id: uploadId } = initializeRes.data;
+
+                console.log('Upload ID:', uploadId);
+
+                // Step 2: Upload Chunks
+                const chunkSize = 5 * 1024 * 1024; // 5 MB
+                const totalChunks = Math.ceil(selectedFile.size / chunkSize);
+                let start = 0;
+
+                const uploadPromises = [];
+                for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                    const chunk = selectedFile.slice(start, start + chunkSize);
+                    start += chunkSize;
+
+                    const chunkFormData = new FormData();
+                    chunkFormData.append('filename', selectedFile.name);
+                    chunkFormData.append('chunk', chunk);
+                    chunkFormData.append('totalChunks', totalChunks);
+                    chunkFormData.append('chunkIndex', chunkIndex);
+                    chunkFormData.append('uploadId', uploadId);
+
+                    const uploadPromise = axios.post('http://localhost:8080/api/v1/upload', chunkFormData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    uploadPromises.push(uploadPromise);
+                }
+
+                await Promise.all(uploadPromises);
+
+                // Step 3: Complete Upload
+                const completeRes = await axios.post('http://localhost:8080/api/v1/upload/complete', {
+                    filename: selectedFile.name,
+                    totalChunks,
+                    uploadId,
+                    video_meta_data: {
+                      
+                    }
+                });
+
+                console.log('Upload complete:', completeRes.data);
+                alert('File uploaded successfully!');
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('File upload failed!');
+            }
+        }
+    </script>
+</body>
+</html>
