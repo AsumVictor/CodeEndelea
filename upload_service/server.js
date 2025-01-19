@@ -1,12 +1,13 @@
-const db_connect = require("./config/db");
-const app = require("./app");
+import db_connect from "./config/db.js";
+import app from "./app.js";
+import dotenv from 'dotenv'
 
 // connect to environment variables
 if (
   process.env.NODE_ENV !== "PRODUCTION" ||
   process.env.NODE_ENV != "production"
 ) {
-  require("dotenv").config({
+  dotenv.config({
     path: "./.env",
   });
 }

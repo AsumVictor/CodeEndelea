@@ -2,7 +2,7 @@
   "name": "upload_service",
   "version": "1.0.0",
   "main": "server.js",
-  "module": "module",
+  "type": "module",
   "scripts": {
     "dev": "nodemon server.js"
   },

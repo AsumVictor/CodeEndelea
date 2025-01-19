@@ -1,12 +1,15 @@
-const router = require("express").Router();
-const multer = require("multer");
+import express from "express";
+import multer from "multer";
 
-const {
+const router = express.Router()
+
+import {
   initialized_upload,
   upload_chunk,
   complete_upload,
   save_to_db,
-} = require("../controller/upload.controller");
+} from "../controller/upload.controller.js";
+
 const upload = multer();
 
 router.post("/", upload.single("chunk"), upload_chunk);
@@ -17,4 +20,4 @@ router.post("/complete", complete_upload);
 
 router.post("/db", save_to_db);
 
-module.exports = router;
+export default router;

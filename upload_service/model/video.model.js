@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const videoSchema = new mongoose.Schema(
   {
@@ -17,7 +17,7 @@ const videoSchema = new mongoose.Schema(
     exercise_timestamps: {
       type: [Number],
       required: false,
-      default: []
+      default: [],
     },
     screen_url: {
       type: String,
@@ -38,7 +38,7 @@ const videoSchema = new mongoose.Schema(
     reactions: {
       type: [Number],
       required: false,
-      default: [0,0,0,0]
+      default: [0, 0, 0, 0],
       // not understand,kind of, moderate, understand, filled
     },
   },
@@ -59,4 +59,4 @@ const videoSchema = new mongoose.Schema(
 
 */
 
-module.exports = mongoose.model("video-metadata-v1", videoSchema);
+export default mongoose.model("video-metadata-v1", videoSchema);

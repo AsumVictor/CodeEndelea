@@ -1,10 +1,10 @@
-const catchAsyncError = require("../middleware/catchAsyncError");
-const aws = require("aws-sdk");
-const ResponseError = require("../utilities/ErrorHandler");
-const videoModel = require("../model/video.model");
+import catchAsyncError from "../middleware/catchAsyncError.js";
+import aws from "aws-sdk";
+import ResponseError from "../utilities/ErrorHandler.js";
+import videoModel from "../model/video.model.js";
 
 // Just initialing the chunking here
-const initialized_upload = catchAsyncError(async (req, res, next) => {
+export const initialized_upload = catchAsyncError(async (req, res, next) => {
   try {
     const { filename } = req.body;
 
@@ -35,7 +35,7 @@ const initialized_upload = catchAsyncError(async (req, res, next) => {
 });
 
 // Here we upload the actual code chunks
-const upload_chunk = catchAsyncError(async (req, res, next) => {
+export const upload_chunk = catchAsyncError(async (req, res, next) => {
   console.log("Work");
   try {
     const { filename, chunkIndex, uploadId } = req.body;
@@ -67,7 +67,7 @@ const upload_chunk = catchAsyncError(async (req, res, next) => {
   }
 });
 
-const complete_upload = catchAsyncError(async (req, res, next) => {
+export const complete_upload = catchAsyncError(async (req, res, next) => {
   try {
     console.log("Completing Upload");
     const { filename, totalChunks, uploadId } = req.body;
@@ -122,7 +122,7 @@ const complete_upload = catchAsyncError(async (req, res, next) => {
   }
 });
 
-const save_to_db = catchAsyncError(async (req, res, next) => {
+export const save_to_db = catchAsyncError(async (req, res, next) => {
   try {
     console.log("Save video metada");
     const { title, description, length, screen_url, camera_url } = req.body;
@@ -142,9 +142,3 @@ const save_to_db = catchAsyncError(async (req, res, next) => {
   }
 });
 
-module.exports = {
-  initialized_upload,
-  upload_chunk,
-  complete_upload,
-  save_to_db
-};

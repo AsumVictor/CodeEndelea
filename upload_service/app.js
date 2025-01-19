@@ -1,10 +1,9 @@
-const express = require("express");
+import express from "express";
 const app = express();
-const cors = require("cors");
-const ErrorHandler = require("./middleware/error.js");
-const api_endpoint = require("./routes/index.js")
-const express_upload = require("express-fileupload")
-const bodyParser = require("body-parser");
+import cors from "cors";
+import ErrorHandler from "./middleware/error.js";
+import api_endpoint from "./routes/index.js"
+
 
 // setting up cross orgin resoures sharing
 const corsOptions = {
@@ -52,4 +51,4 @@ app.all("*", (req, res, next) => {
 });
 
 app.use(ErrorHandler);
-module.exports = app;
+export default app;
