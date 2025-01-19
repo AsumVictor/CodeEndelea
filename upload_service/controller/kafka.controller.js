@@ -1,16 +1,18 @@
 import Kafka_controller from "../kafka/kafka.config.js";
-
-export const kafka_transcode = async (title, url) => {
+import { nanoid } from "nanoid";
+export const kafka_transcode = async (title, url, field, _id) => {
   try {
     const message = {
       title: title,
       url: url,
+      field,
+      _id,
     };
 
     const kafkaconfig = new Kafka_controller();
     const msgs = [
       {
-        key: "video",
+        key: nanoid(),
         value: JSON.stringify(message),
       },
     ];

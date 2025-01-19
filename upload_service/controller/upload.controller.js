@@ -142,3 +142,15 @@ export const save_to_db = catchAsyncError(async (req, res, next) => {
   }
 });
 
+export const update_video_url = catchAsyncError(async (field, url, _id) => {
+  try {
+    const video = await videoModel.findById(_id);
+    video[field] = url;
+
+    const res = await video.save();
+    console.log(res)
+  } catch (error) {
+    // Send notification that it failed
+    console.log(error);
+  }
+});
