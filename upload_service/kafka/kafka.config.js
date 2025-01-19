@@ -6,14 +6,14 @@ export default class Kafka_controller {
       clientId: process.env.KAFKA_CLIENT,
       brokers: [process.env.KAFKA_BROKER],
     });
-    this.producer = this.kafka.producer()
-    this.consumer = this.kafka.consumer({groupId: "uploading"})
+    this.producer = this.kafka.producer();
+    this.consumer = this.kafka.consumer({ groupId: "uploading" });
   }
 
   async produce(topic, messages) {
     try {
       const result = await this.producer.connect();
-    //   console.log("kafka connected... : ", result);
+      //   console.log("kafka connected... : ", result);
       await this.producer.send({
         topic: topic,
         messages: messages,
@@ -25,22 +25,20 @@ export default class Kafka_controller {
     }
   }
 
-  async consume(topic , callback){
-    const consumer = this.kafka.consumer({groupId: "uploading"})
+  async consume(topic, callback) {
+    const consumer = this.kafka.consumer({ groupId: "uploading" });
 
     try {
-        await consumer.connect()
-        await consumer.subscribe({topic: topic, fromBeginning: true})
-        await consumer.run({
-            eachMessage: async({
-                topic, partition,message
-            }) =>{
-                const value = message.value.toString()
-                callback(value)
-            }
-        })
+      await consumer.connect();
+      await consumer.subscribe({ topic: topic, fromBeginning: true });
+      await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+          const value = message.value.toString();
+          callback(value);
+        },
+      });
     } catch (error) {
-        console.log(error)
+      console.log(error);
     }
-}
+  }
 }
