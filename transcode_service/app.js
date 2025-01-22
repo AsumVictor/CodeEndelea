@@ -2,6 +2,8 @@ import express from "express";
 const app = express();
 import cors from "cors";
 import ErrorHandler from "./middleware/error.js";
+import routes from "./routes/api.route.js"
+
 
 
 // setting up cross orgin resoures sharing
@@ -34,6 +36,8 @@ app.use((req, res, next) => {
   console.log(`incoming request: ${req.path}`);
   next();
 });
+
+app.use("/api", routes)
 
 
 // Routes for all request not API end-point
