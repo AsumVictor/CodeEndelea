@@ -2,6 +2,7 @@ import catchAsyncError from "../middleware/catchAsyncError.js";
 import aws from "aws-sdk";
 import ResponseError from "../utilities/ErrorHandler.js";
 import videoModel from "../model/video.model.js";
+import { kafka_transcode } from "./kafka.controller.js";
 
 // Just initialing the chunking here
 export const initialized_upload = catchAsyncError(async (req, res, next) => {
@@ -36,7 +37,6 @@ export const initialized_upload = catchAsyncError(async (req, res, next) => {
 
 // Here we upload the actual code chunks
 export const upload_chunk = catchAsyncError(async (req, res, next) => {
-  console.log("Work");
   try {
     const { filename, chunkIndex, uploadId } = req.body;
 
@@ -132,9 +132,19 @@ export const save_to_db = catchAsyncError(async (req, res, next) => {
     }
 
     // creating data in database
-    const video = await videoModel.create(req.body);
+    const {
+      title: ttl,
+      _id,
+      camera_url: url_cam,
+      screen_url: url_scn,
+    } = await videoModel.create(req.body);
 
-    // pushVideoForEncodingToKafka(title, uploadResult.Location);
+    // update camera
+    kafka_transcode(ttl, url_cam, "camera_hsl_url", _id);
+
+    // update the screen
+    kafka_transcode(ttl, url_scn, "screen_hsl_url", _id);
+
     return res.status(201).json({ data: video });
   } catch (error) {
     console.log("Error handling complete", error);
@@ -148,7 +158,7 @@ export const update_video_url = catchAsyncError(async (field, url, _id) => {
     video[field] = url;
 
     const res = await video.save();
-    console.log(res)
+    console.log(res);
   } catch (error) {
     // Send notification that it failed
     console.log(error);

@@ -23,7 +23,7 @@ process.on("unCaughtException", (err) => {
 const consumer = new Kafka_controller();
 
 consumer.consume("update_url", async (value) => {
-  const { field, url, _id } = JSON.parse(value);
+  const { title, url, field, _id } = JSON.parse(value);
   update_video_url(field, url, _id);
 });
 
