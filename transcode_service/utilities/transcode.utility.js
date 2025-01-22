@@ -4,19 +4,19 @@ import path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { transcodeVideo } from "../cc.js";
+import { kafka_update_url } from "../controller/kafka.controller.js";
 
 // Set ffmpeg path
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
-const Transcode = async (inputFile) => {
-
+export const Transcode = async (title, url, field, _id) => {
   const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECURITY_ACCESS_KEY,
   });
 
   const bucketName = process.env.AWS_BUCKET_NAME;
-  const hlsFolder = "./hls";
+  const hlsFolder = `./${_id}`;
 
   console.log("Starting script");
   console.time("req_time");
@@ -24,8 +24,8 @@ const Transcode = async (inputFile) => {
   try {
     // Download the file from S3
     console.log("Downloading S3 mp4 file locally...");
-    const mp4FilePath = `${inputFile}`;
-    const localFilePath = `./local.mp4`;
+    const mp4FilePath = `${url}`;
+    const localFilePath = `./${_id}.mp4`;
 
     const writeStream = fs.createWriteStream(localFilePath);
 
@@ -45,9 +45,9 @@ const Transcode = async (inputFile) => {
 
     console.log("Downloaded S3 mp4 file locally.");
 
-   await transcodeVideo(localFilePath, hlsFolder)
-    
-     // Delete local MP4 file
+    await transcodeVideo(localFilePath, hlsFolder);
+
+    // Delete local MP4 file
     console.log("Deleting local MP4 file...");
     fs.unlinkSync(localFilePath);
     console.log("Local MP4 file deleted.");
@@ -55,8 +55,8 @@ const Transcode = async (inputFile) => {
     // Upload generated HLS files to S3
     console.log("Uploading HLS files to S3...");
     const files = fs.readdirSync(hlsFolder);
-    
-    const url = null;
+
+    const new_url = null;
     for (const file of files) {
       const filePath = path.join(hlsFolder, file);
       const fileStream = fs.createReadStream(filePath);
@@ -73,14 +73,14 @@ const Transcode = async (inputFile) => {
       };
 
       let res = await s3.upload(uploadParams).promise();
-      if(file.endsWith(".m3u8")){
-        url = res.Location
+      if (file.endsWith(".m3u8")) {
+        url = res.Location;
       }
-     
+
       fs.unlinkSync(filePath); // Clean up local files
     }
 
-   
+    kafka_update_url(title, url = new_url, field, _id);
 
     console.log("HLS files uploaded to S3 and local files cleaned up.");
     console.timeEnd("req_time");

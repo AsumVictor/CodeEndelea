@@ -1,6 +1,7 @@
 import app from "./app.js";
 import dotenv from "dotenv";
-
+import Kafka_controller from "./kafka/kafka.config.js";
+import Transcode from "./utilities/transcode.utility.js";
 
 // connect to environment variables
 if (
@@ -18,12 +19,12 @@ process.on("unCaughtException", (err) => {
   console.log("Server shutting down");
 });
 
-// const consumer = new Kafka_controller();
+const consumer = new Kafka_controller();
 
-// consumer.consume("update_url", async (value) => {
-//   const { field, url, _id } = JSON.parse(value);
-//   update_video_url(field, url, _id);
-// });
+consumer.consume("transcode", async (value) => {
+  const { title, url, field, _id } = JSON.parse(value);
+  Transcode(title, url, field, _id);
+});
 
 const server = app.listen(process.env.PORT, async (err) => {
   // connect to database
