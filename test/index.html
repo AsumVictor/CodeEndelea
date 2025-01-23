@@ -1,128 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sequential File Upload</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f3f4f6;
-        }
-        .container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-        }
-        .container input, .container button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .container button {
-            background: linear-gradient(90deg, #6a5af9, #4a90e2);
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .container button:hover {
-            opacity: 0.9;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f3f4f6;
+      }
+      .container {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+      }
+      .container input,
+      .container button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .container button {
+        background: linear-gradient(90deg, #6a5af9, #4a90e2);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .container button:hover {
+        opacity: 0.9;
+      }
+      progress {
+        width: 100%;
+        margin-bottom: 10px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <form id="uploadForm">
-            <input type="text" id="title" placeholder="Title" required>
-            <input type="text" id="description" placeholder="Description">
-            <input type="text" id="author" placeholder="Author" required>
-            <input type="file" id="file" required>
-            <button type="button" onclick="handleUpload()">Upload</button>
-        </form>
+      <form id="uploadForm">
+        <label for="screenVideo">Screen Record Video:</label>
+        <input type="file" id="screenVideo" accept="video/*" required />
+
+        <label for="cameraVideo">Camera Video:</label>
+        <input type="file" id="cameraVideo" accept="video/*" required />
+
+        <progress id="progressBar" value="0" max="100"></progress>
+        <button type="button" onclick="handleUpload()">Upload</button>
+      </form>
     </div>
 
     <script>
-        async function handleUpload() {
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            const author = document.getElementById('author').value;
-            const fileInput = document.getElementById('file');
-            const selectedFile = fileInput.files[0];
+      async function uploadFile(file, fileType, progressBar) {
+        // Step 1: Initialize Upload
+        const initializeFormData = new FormData();
+        initializeFormData.append("filename", file.name);
+        initializeFormData.append("fileType", fileType);
 
-            if (!title || !author) {
-                alert('Title and Author are required fields.');
-                return;
+        const initializeRes = await axios.post(
+          "http://localhost:8080/api/v1/upload/initialize",
+          initializeFormData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        const { upload_id: uploadId } = initializeRes.data;
+        console.log(`Initialized ${fileType}:`, uploadId);
+
+        // Step 2: Upload Chunks
+        const chunkSize = 5 * 1024 * 1024; // 5 MB
+        const totalChunks = Math.ceil(file.size / chunkSize);
+        let start = 0;
+
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+          const chunk = file.slice(start, start + chunkSize);
+          start += chunkSize;
+
+          const chunkFormData = new FormData();
+          chunkFormData.append("filename", file.name);
+          chunkFormData.append("chunk", chunk);
+          chunkFormData.append("totalChunks", totalChunks);
+          chunkFormData.append("chunkIndex", chunkIndex);
+          chunkFormData.append("uploadId", uploadId);
+
+          await axios.post(
+            "http://localhost:8080/api/v1/upload",
+            chunkFormData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+              onUploadProgress: (progressEvent) => {
+                const percentage =
+                  ((chunkIndex + progressEvent.loaded / chunk.size) /
+                    totalChunks) *
+                  100;
+                progressBar.value = percentage;
+              },
             }
-
-            try {
-                // Step 1: Initialize Upload
-                const initializeFormData = new FormData();
-                initializeFormData.append('filename', selectedFile.name);
-
-                const initializeRes = await axios.post('http://localhost:8080/api/v1/upload/initialize', initializeFormData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-
-                const { upload_id: uploadId } = initializeRes.data;
-
-                console.log('Upload ID:', uploadId);
-
-                // Step 2: Upload Chunks
-                const chunkSize = 5 * 1024 * 1024; // 5 MB
-                const totalChunks = Math.ceil(selectedFile.size / chunkSize);
-                let start = 0;
-
-                const uploadPromises = [];
-                for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-                    const chunk = selectedFile.slice(start, start + chunkSize);
-                    start += chunkSize;
-
-                    const chunkFormData = new FormData();
-                    chunkFormData.append('filename', selectedFile.name);
-                    chunkFormData.append('chunk', chunk);
-                    chunkFormData.append('totalChunks', totalChunks);
-                    chunkFormData.append('chunkIndex', chunkIndex);
-                    chunkFormData.append('uploadId', uploadId);
-
-                    const uploadPromise = axios.post('http://localhost:8080/api/v1/upload', chunkFormData, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    });
-                    uploadPromises.push(uploadPromise);
-                }
-
-                await Promise.all(uploadPromises);
-
-                // Step 3: Complete Upload
-                const completeRes = await axios.post('http://localhost:8080/api/v1/upload/complete', {
-                    filename: selectedFile.name,
-                    totalChunks,
-                    uploadId,
-                    video_meta_data: {
-                      
-                    }
-                });
-
-                console.log('Upload complete:', completeRes.data);
-                alert('File uploaded successfully!');
-            } catch (error) {
-                console.error('Error uploading file:', error);
-                alert('File upload failed!');
-            }
+          );
         }
+
+        // Step 3: Complete Upload
+        const response = await axios.post(
+          "http://localhost:8080/api/v1/upload/complete",
+          {
+            filename: file.name,
+            totalChunks,
+            uploadId,
+            fileType,
+          }
+        );
+        const { url } = response.data;
+        // console.log(`${fileType} Upload Complete:`, url);
+        return url;
+      }
+
+      async function handleUpload() {
+        const screenVideoInput = document.getElementById("screenVideo");
+        const cameraVideoInput = document.getElementById("cameraVideo");
+        const progressBar = document.getElementById("progressBar");
+
+        const screenVideo = screenVideoInput.files[0];
+        const cameraVideo = cameraVideoInput.files[0];
+
+        if (!screenVideo || !cameraVideo) {
+          alert("Both videos must be selected.");
+          return;
+        }
+
+        progressBar.value = 0;
+
+        try {
+          // Upload Screen Video First
+          const screen = await uploadFile(
+            screenVideo,
+            "Screen Record",
+            progressBar
+          );
+
+          // Upload Camera Video Second
+          const camera = await uploadFile(cameraVideo, "Camera", progressBar);
+
+          console.log("Screen", screen);
+          console.log("Camera", camera);
+
+          // Final Step: Notify the Server (Database Request)
+          await axios.post("http://localhost:8080/api/v1/upload/db", {
+            title: "Trial",
+            description: "Demo",
+            length: 344,
+            screen_url: screen,
+            camera_url: camera,
+            screen_key: screenVideo.name,
+            camera_key: cameraVideo.name
+          });
+
+          alert("Both videos uploaded successfully!");
+        } catch (error) {
+          console.error("Error uploading files:", error);
+          alert("File upload failed!");
+        }
+      }
     </script>
-</body>
+  </body>
 </html>

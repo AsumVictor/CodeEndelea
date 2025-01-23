@@ -30,7 +30,7 @@ const resolutions = [
 const outputDir = "./hls_output"; // Directory to store output files
 
 
-export async function transcodeVideo(inputFile, outputDir) {
+export async function transcodeVideo(inputFile, outputDir, url) {
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
@@ -83,7 +83,7 @@ export async function transcodeVideo(inputFile, outputDir) {
       masterPlaylist += `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},RESOLUTION=${resolution}\n${outputFileName}\n`;
     });
 
-    const masterPlaylistPath = path.join(outputDir, "master.m3u8");
+    const masterPlaylistPath = path.join(outputDir, `${url}_master.m3u8`);
     fs.writeFileSync(masterPlaylistPath, masterPlaylist);
     console.log(`Master playlist generated: ${masterPlaylistPath}`);
 
