@@ -5,6 +5,7 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { transcodeVideo } from "../cc.js";
 import { kafka_update_url } from "../controller/kafka.controller.js";
+import { produceMessage } from "../kafka/produce.job.js";
 
 // Set ffmpeg path
 ffmpeg.setFfmpegPath(ffmpegStatic);
@@ -25,7 +26,7 @@ export const Transcode = async (title, url, field, _id) => {
     // Download the file from S3
     console.log("Downloading S3 mp4 file locally...");
     const mp4FilePath = `${url}`;
-    const localFilePath = `./${url.replace(".","__")}.mp4`;
+    const localFilePath = `./${url.replace(".", "")}.mp4`;
 
     const writeStream = fs.createWriteStream(localFilePath);
 
@@ -73,17 +74,28 @@ export const Transcode = async (title, url, field, _id) => {
       };
 
       let res = await s3.upload(uploadParams).promise();
-      if (file.endsWith(".m3u8")) {
+      if (file.endsWith("master.m3u8")) {
         new_url = res.Location;
       }
 
-      fs.unlinkSync(filePath); // Clean up local files
+      try {
+        fs.unlinkSync(filePath); // Clean up local files
+      } catch (error) {
+        continue;
+      }
     }
 
-    console.log("URL AFTER UPLOAD TO S3: ==>", new_url)
-    // kafka_update_url(title, url = new_url, field, _id);
+    console.log("URL AFTER UPLOAD TO S3: ==>", new_url);
+    produceMessage("update_url", {
+      title,
+      url: new_url,
+      field,
+      _id,
+    });
 
-    console.log(`HLS files uploaded to S3 and local files cleaned up. ==> for ${url}`);
+    console.log(
+      `HLS files uploaded to S3 and local files cleaned up. ==> for ${url}`
+    );
     console.timeEnd("req_time");
   } catch (error) {
     console.error("Error during transcoding process:", error);

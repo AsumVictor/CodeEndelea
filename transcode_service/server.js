@@ -2,6 +2,8 @@ import app from "./app.js";
 import dotenv from "dotenv";
 import Kafka_controller from "./kafka/kafka.config.js";
 import Transcode from "./utilities/transcode.utility.js";
+import { consumeMessages } from "./kafka/comsume.job.js";
+import { produceMessage } from "./kafka/produce.job.js";
 
 // connect to environment variables
 if (
@@ -19,10 +21,8 @@ process.on("unCaughtException", (err) => {
   console.log("Server shutting down");
 });
 
-const consumer = new Kafka_controller();
-
-consumer.consume("transcode", async (value) => {
-  const { title, url, field, _id } = JSON.parse(value);
+consumeMessages("transcode", async (value) => {
+  const { title, url, field, _id } = value;
   Transcode(title, url, field, _id);
 });
 

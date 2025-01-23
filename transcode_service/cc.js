@@ -87,8 +87,6 @@ export async function transcodeVideo(inputFile, outputDir, url) {
     fs.writeFileSync(masterPlaylistPath, masterPlaylist);
     console.log(`Master playlist generated: ${masterPlaylistPath}`);
 
-
-
   } catch (error) {
     console.error("Error during transcoding:", error);
   }

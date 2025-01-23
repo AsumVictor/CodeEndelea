@@ -3,6 +3,7 @@ import aws from "aws-sdk";
 import ResponseError from "../utilities/ErrorHandler.js";
 import videoModel from "../model/video.model.js";
 import { kafka_transcode } from "./kafka.controller.js";
+import { produceMessage } from "../kafka/produce.job.js";
 
 // Just initialing the chunking here
 export const initialized_upload = catchAsyncError(async (req, res, next) => {
@@ -156,10 +157,20 @@ export const save_to_db = catchAsyncError(async (req, res, next) => {
     } = await videoModel.create(req.body);
 
     // update camera
-    kafka_transcode(ttl, camera_key, "camera_hsl_url", _id);
+    produceMessage("transcode", {
+      title: ttl,
+      url: camera_key,
+      field: "camera_hsl_url",
+      _id,
+    });
 
     // update the screen
-    kafka_transcode(ttl, screen_key, "screen_hsl_url", _id);
+    produceMessage("transcode", {
+      title: ttl,
+      url: screen_key,
+      field: "screen_hsl_url",
+      _id,
+    });
 
     return res.status(201).json({
       data: {
@@ -175,15 +186,23 @@ export const save_to_db = catchAsyncError(async (req, res, next) => {
   }
 });
 
+// export const dd = catchAsyncError(async (req, res, next) => {
+//   const { field, url, _id } = req.body;
+//   // console.log({ field, url, _id });
+//   const result = update_video_url(field, url, _id);
+//   res.json(result);
+// });
+
 export const update_video_url = catchAsyncError(async (field, url, _id) => {
   try {
-    const video = await videoModel.findById(_id);
-    video[field] = url;
+    // console.log("In process", field, url, _id);
 
-    const res = await video.save();
-    console.log(res);
+    const update = {};
+    update[field] = url;
+
+    const result = await videoModel.updateOne({ _id: _id }, { $set: update });
   } catch (error) {
     // Send notification that it failed
-    console.log(error);
+    console.log("Error in updating", error);
   }
 });

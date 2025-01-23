@@ -30,10 +30,12 @@ const videoSchema = new mongoose.Schema(
     screen_hsl_url: {
       type: String,
       required: false,
+      default: "__"
     },
     camera_hsl_url: {
       type: String,
       required: false,
+      default: "__"
     },
     reactions: {
       type: [Number],
