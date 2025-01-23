@@ -13,6 +13,7 @@ const videoSchema = new mongoose.Schema(
     length: {
       type: Number,
       required: [true, "Video length is needed"],
+      default: 0,
     },
     exercise_timestamps: {
       type: [Number],
@@ -22,24 +23,33 @@ const videoSchema = new mongoose.Schema(
     screen_url: {
       type: String,
       required: [true, "Screen Video url is required to create a video"],
+      default: null,
     },
     camera_url: {
       type: String,
       required: [true, "Camera video url is required to create a video"],
+      default: null,
     },
     screen_hsl_url: {
       type: String,
       required: false,
+      default: null,
     },
     camera_hsl_url: {
       type: String,
       required: false,
+      default: null,
     },
     reactions: {
       type: [Number],
       required: false,
       default: [0, 0, 0, 0],
+
       // not understand,kind of, moderate, understand, filled
+    },
+    is_publish: {
+      type: Boolean,
+      default: false,
     },
   },
   {

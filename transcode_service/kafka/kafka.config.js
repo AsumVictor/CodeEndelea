@@ -2,6 +2,8 @@ import { Kafka } from "kafkajs";
 
 export default class KafkaController {
   constructor(clientId, brokers) {
+    console.log(brokers)
+
     this.kafka = new Kafka({
       clientId: clientId,
       brokers: brokers,
