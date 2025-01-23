@@ -1,5 +1,5 @@
 import KafkaController from "./kafka.config.js";
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 if (
   process.env.NODE_ENV !== "PRODUCTION" ||
   process.env.NODE_ENV != "production"
@@ -18,9 +18,9 @@ export const consumeMessages = async (topic, callback) => {
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      const value = message.value.toString();
-      console.log("Received update URL message:", JSON.parse(value));
-      callback(value)
+      const value = JSON.parse(message.value.toString());
+      console.log("Received update URL message:", value);
+      callback(value);
     },
   });
 };

@@ -126,39 +126,29 @@ export const complete_upload = catchAsyncError(async (req, res, next) => {
 export const save_to_db = catchAsyncError(async (req, res, next) => {
   try {
     console.log("Save video metada");
-    const {
-      title,
-      description,
-      length,
-      screen_url,
-      camera_url,
-      screen_key,
-      camera_key,
-    } = req.body;
+    const { _id, camera_key, screen_key, camera_url, screen_url } = req.body;
 
     if (
-      !title ||
-      !description ||
-      !length ||
-      !screen_url ||
-      !camera_url ||
+      !_id ||
+      !camera_key ||
       !screen_key ||
-      !camera_key
+      !camera_url ||
+      !screen_url ||
+      !length
     ) {
       return next(new ResponseError("Some filds are not completed", 400));
     }
 
-    // creating data in database
-    const {
-      title: ttl,
-      _id,
-      camera_url: url_cam,
-      screen_url: url_scn,
-    } = await videoModel.create(req.body);
+    // updating data in database
+    const update = {};
+    update["screen_url"] = screen_url;
+    update["camera_url"] = camera_url;
+    update["length"] = length;
+
+    const result = await videoModel.updateOne({ _id: _id }, { $set: update });
 
     // update camera
     produceMessage("transcode", {
-      title: ttl,
       url: camera_key,
       field: "camera_hsl_url",
       _id,
@@ -172,14 +162,27 @@ export const save_to_db = catchAsyncError(async (req, res, next) => {
       _id,
     });
 
-    return res.status(201).json({
-      data: {
-        title: ttl,
-        _id,
-        camera_url: url_cam,
-        screen_url: url_scn,
-      },
-    });
+    return res.status(201).json(result);
+  } catch (error) {
+    console.log("Error handling complete", error);
+    return next(new ResponseError(error.message, 400));
+  }
+});
+
+export const save_metadata_to_db = catchAsyncError(async (req, res, next) => {
+  try {
+    console.log("Save video metada");
+    const { title, description } = req.body;
+
+    if (!title || !description) {
+      return next(new ResponseError("Some filds are not completed", 400));
+    }
+
+    // creating data in database
+    const video = await videoModel.create(req.body);
+
+
+    return res.status(201).json({ _id: video._id });
   } catch (error) {
     console.log("Error handling complete", error);
     return next(new ResponseError(error.message, 400));
@@ -195,12 +198,13 @@ export const save_to_db = catchAsyncError(async (req, res, next) => {
 
 export const update_video_url = catchAsyncError(async (field, url, _id) => {
   try {
-    // console.log("In process", field, url, _id);
+    console.log("In process", field, url, _id);
 
     const update = {};
     update[field] = url;
 
     const result = await videoModel.updateOne({ _id: _id }, { $set: update });
+    console.log(result);
   } catch (error) {
     // Send notification that it failed
     console.log("Error in updating", error);

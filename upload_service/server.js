@@ -22,7 +22,8 @@ process.on("unCaughtException", (err) => {
 });
 
 consumeMessages("update_url", async (value) => {
-  const { title, url, field, _id } = value;
+  const { url, field, _id } = value;
+  console.log("Recieved in server:", { url, field, _id })
   update_video_url(field, url, _id);
 });
 
