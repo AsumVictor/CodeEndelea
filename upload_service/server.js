@@ -22,10 +22,10 @@ process.on("unCaughtException", (err) => {
 
 const consumer = new Kafka_controller();
 
-consumer.consume("update_url", async (value) => {
-  const { title, url, field, _id } = JSON.parse(value);
-  update_video_url(field, url, _id);
-});
+// consumer.consume("update_url", async (value) => {
+//   const { title, url, field, _id } = JSON.parse(value);
+//   update_video_url(field, url, _id);
+// });
 
 const server = app.listen(process.env.PORT, async (err) => {
   // connect to database

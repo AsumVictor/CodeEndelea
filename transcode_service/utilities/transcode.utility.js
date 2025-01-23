@@ -16,7 +16,7 @@ export const Transcode = async (title, url, field, _id) => {
   });
 
   const bucketName = process.env.AWS_BUCKET_NAME;
-  const hlsFolder = `./${_id}`;
+  const hlsFolder = `hsl/${_id}`;
 
   console.log("Starting script");
   console.time("req_time");
@@ -25,7 +25,7 @@ export const Transcode = async (title, url, field, _id) => {
     // Download the file from S3
     console.log("Downloading S3 mp4 file locally...");
     const mp4FilePath = `${url}`;
-    const localFilePath = `./${_id}.mp4`;
+    const localFilePath = `./${url.replace(".","__")}.mp4`;
 
     const writeStream = fs.createWriteStream(localFilePath);
 
@@ -45,7 +45,7 @@ export const Transcode = async (title, url, field, _id) => {
 
     console.log("Downloaded S3 mp4 file locally.");
 
-    await transcodeVideo(localFilePath, hlsFolder);
+    await transcodeVideo(localFilePath, hlsFolder, url);
 
     // Delete local MP4 file
     console.log("Deleting local MP4 file...");
@@ -56,7 +56,7 @@ export const Transcode = async (title, url, field, _id) => {
     console.log("Uploading HLS files to S3...");
     const files = fs.readdirSync(hlsFolder);
 
-    const new_url = null;
+    let new_url = null;
     for (const file of files) {
       const filePath = path.join(hlsFolder, file);
       const fileStream = fs.createReadStream(filePath);
@@ -74,15 +74,16 @@ export const Transcode = async (title, url, field, _id) => {
 
       let res = await s3.upload(uploadParams).promise();
       if (file.endsWith(".m3u8")) {
-        url = res.Location;
+        new_url = res.Location;
       }
 
       fs.unlinkSync(filePath); // Clean up local files
     }
 
-    kafka_update_url(title, url = new_url, field, _id);
+    console.log("URL AFTER UPLOAD TO S3: ==>", new_url)
+    // kafka_update_url(title, url = new_url, field, _id);
 
-    console.log("HLS files uploaded to S3 and local files cleaned up.");
+    console.log(`HLS files uploaded to S3 and local files cleaned up. ==> for ${url}`);
     console.timeEnd("req_time");
   } catch (error) {
     console.error("Error during transcoding process:", error);

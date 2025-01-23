@@ -125,9 +125,25 @@ export const complete_upload = catchAsyncError(async (req, res, next) => {
 export const save_to_db = catchAsyncError(async (req, res, next) => {
   try {
     console.log("Save video metada");
-    const { title, description, length, screen_url, camera_url } = req.body;
+    const {
+      title,
+      description,
+      length,
+      screen_url,
+      camera_url,
+      screen_key,
+      camera_key,
+    } = req.body;
 
-    if (!title || !description || !length || !screen_url || !camera_url) {
+    if (
+      !title ||
+      !description ||
+      !length ||
+      !screen_url ||
+      !camera_url ||
+      !screen_key ||
+      !camera_key
+    ) {
       return next(new ResponseError("Some filds are not completed", 400));
     }
 
@@ -140,12 +156,19 @@ export const save_to_db = catchAsyncError(async (req, res, next) => {
     } = await videoModel.create(req.body);
 
     // update camera
-    kafka_transcode(ttl, url_cam, "camera_hsl_url", _id);
+    kafka_transcode(ttl, camera_key, "camera_hsl_url", _id);
 
     // update the screen
-    kafka_transcode(ttl, url_scn, "screen_hsl_url", _id);
+    kafka_transcode(ttl, screen_key, "screen_hsl_url", _id);
 
-    return res.status(201).json({ data: video });
+    return res.status(201).json({
+      data: {
+        title: ttl,
+        _id,
+        camera_url: url_cam,
+        screen_url: url_scn,
+      },
+    });
   } catch (error) {
     console.log("Error handling complete", error);
     return next(new ResponseError(error.message, 400));
