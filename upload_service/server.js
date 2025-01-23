@@ -3,6 +3,7 @@ import app from "./app.js";
 import dotenv from "dotenv";
 import Kafka_controller from "./kafka/kafka.config.js";
 import { update_video_url } from "./controller/upload.controller.js";
+import { consumeMessages } from "./kafka/consume.job.js";
 
 // connect to environment variables
 if (
@@ -20,12 +21,10 @@ process.on("unCaughtException", (err) => {
   console.log("Server shutting down");
 });
 
-const consumer = new Kafka_controller();
-
-// consumer.consume("update_url", async (value) => {
-//   const { title, url, field, _id } = JSON.parse(value);
-//   update_video_url(field, url, _id);
-// });
+consumeMessages("update_url", async (value) => {
+  const { title, url, field, _id } = value;
+  update_video_url(field, url, _id);
+});
 
 const server = app.listen(process.env.PORT, async (err) => {
   // connect to database

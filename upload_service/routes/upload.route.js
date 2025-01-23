@@ -9,6 +9,7 @@ import {
   complete_upload,
   save_to_db,
 } from "../controller/upload.controller.js";
+// import { produceMessage } from "../kafka/produce.job.js";
 
 const upload = multer();
 
@@ -19,5 +20,7 @@ router.post("/initialize", upload.none(), initialized_upload);
 router.post("/complete", complete_upload);
 
 router.post("/db", save_to_db);
+
+// router.post("/update", dd)
 
 export default router;
