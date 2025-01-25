@@ -36,7 +36,7 @@ export function FloatingTools({
       drag
       dragMomentum={false}
       initial={{ x: 100, y: 100 }}
-      className="absolute z-50 flex flex-col gap-3 p-3 rounded-lg bg-[#1e1f26] shadow-lg border border-gray-800"
+      className="absolute z-50 flex flex-col gap-3 p-3 bg-[#0a0a0f] shadow-lg border border-gray-800 rounded-xl"
       style={{ touchAction: "none" }}
     >
       <div className="flex flex-col gap-2">
@@ -44,7 +44,7 @@ export function FloatingTools({
           <Button
             key={Tool.name}
             variant="ghost"
-            className={`flex gap-2 justify-start text-gray-400 hover:text-white hover:bg-gray-800 ${
+            className={`flex gap-2 justify-start text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl ${
               selectedTool === Tool.name ? "bg-gray-800 text-white" : ""
             }`}
             onClick={() => onSelectTool(Tool.name)}

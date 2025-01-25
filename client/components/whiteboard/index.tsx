@@ -17,7 +17,7 @@ export default function CanvasEditor() {
     if (canvasRef.current) {
       const fabricCanvas = new fabric.Canvas(canvasRef.current, {
         width: window.innerWidth,
-        height: window.innerHeight - 48,
+        height: window.innerHeight,
         backgroundColor: "#ffffff",
         isDrawingMode: true,
       });
@@ -29,7 +29,7 @@ export default function CanvasEditor() {
       const handleResize = () => {
         fabricCanvas.setDimensions({
           width: window.innerWidth,
-          height: window.innerHeight - 48,
+          height: window.innerHeight,
         });
       };
 
@@ -116,22 +116,21 @@ export default function CanvasEditor() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-full overflow-hidden relative">
       {/* Main Canvas */}
-      <div className="flex-1 relative">
-        <canvas ref={canvasRef} />
-        <FloatingTools
-          onSelectTool={handleToolSelect}
-          onColorChange={setColor}
-          onSizeChange={setSize}
-          selectedTool={tool}
-          color={color}
-          size={size}
-        />
-      </div>
+      <div className="flex-1 relative"></div>
+      <canvas ref={canvasRef} />
 
+      <FloatingTools
+        onSelectTool={handleToolSelect}
+        onColorChange={setColor}
+        onSizeChange={setSize}
+        selectedTool={tool}
+        color={color}
+        size={size}
+      />
       {/* Bottom Controls */}
-      <div className="h-12 bg-[#1e1f26] border-t border-gray-800 flex items-center px-4 gap-4">
+      <div className="h-12 absolute self-center top-1 rounded-xl bg-[#0a0a0f] border-t border-gray-800 flex items-center px-4 gap-4 w-9/12">
         <div className="flex gap-2">
           <Button
             variant="ghost"
