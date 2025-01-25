@@ -1,12 +1,10 @@
 import React from "react";
 import CodeEditor from "../codeEditor/editor";
+import WhiteBoard from "../whiteboard/index";
+import { SplitScreen } from "../screens/SplitScreen";
 
-function index() {
-  return (
-    <div className=" w-full h-screen">
-      <CodeEditor />
-    </div>
-  );
+function CodeStudio() {
+  return <SplitScreen LeftPage={<WhiteBoard />} RightPage={<CodeEditor />} />;
 }
 
-export default index;
+export default CodeStudio;

@@ -148,6 +148,8 @@ export default function CodeEditor() {
     }));
   };
 
+  console.log(executionResult)
+
   return (
     <div className="h-full w-full bg-[#0a0a0f]/80 relative">
       <div className=" py-2 px-2 relative h-full w-full">

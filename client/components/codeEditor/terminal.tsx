@@ -142,7 +142,7 @@ export function Terminal({
                   <span>Code run successfuly</span>
                 </p>
                 <pre className="text-emerald-600 whitespace-pre-wrap">
-                  {error}
+                  {output}
                 </pre>
               </>
             ) : (
