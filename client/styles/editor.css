@@ -1,0 +1,104 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+.monaco-editor .margin {
+  background-color: inherit !important;
+}
+
+.monaco-editor .line-numbers {
+  color: inherit !important;
+}
+
+.monaco-editor .current-line {
+  border: none !important;
+}
+
+.monaco-editor .cursor {
+  background-color: #fff !important;
+  border-color: #fff !important;
+}
+
+/* Theme-specific styles */
+.vs-dark .monaco-editor,
+.hc-black .monaco-editor {
+  background-color: #1e1e1e !important;
+}
+
+.vs-light .monaco-editor {
+  background-color: #ffffff !important;
+}
+
+.monokai .monaco-editor {
+  background-color: #272822 !important;
+}
+
+.solarized-dark .monaco-editor {
+  background-color: #002b36 !important;
+}
+
+.solarized-light .monaco-editor {
+  background-color: #fdf6e3 !important;
+}
+
+.github-dark .monaco-editor {
+  background-color: #24292e !important;
+}
+
+.github-light .monaco-editor {
+  background-color: #ffffff !important;
+}
+
+.dracula .monaco.dracula .monaco-editor {
+  background-color: #282a36 !important;
+}
+
+.nord .monaco-editor {
+  background-color: #2e3440 !important;
+}
+
+/* Terminal animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* Dropdown styles */
+.select-trigger {
+  background-color: #2563eb !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+}
+
+.select-trigger:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.select-content {
+  background-color: #1e293b !important;
+  border-color: #3b82f6 !important;
+}
+
+.select-item {
+  color: white !important;
+}
+
+.select-item:hover {
+  background-color: #2563eb !important;
+}
+
+.select-item[data-highlighted] {
+  background-color: #3b82f6 !important;
+}
+

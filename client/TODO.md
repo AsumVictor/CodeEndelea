@@ -1,0 +1,6 @@
+- From upload or record would open new tap to code_record screen
+- In the record screen,
+    - check if user has give access to camera and microphone
+    - Record the give the user instructions to share and select the record tab open
+    - Allow to click on record to record selected screen.
+    - Once user finish recording, it should send back to the record page to stop recording.
