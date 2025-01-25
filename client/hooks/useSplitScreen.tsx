@@ -25,6 +25,7 @@ export const useSplitScreen = (initialSplit = 50, minWidth = 200) => {
       if (!prev && !rightVisible) setRightVisible(true); // Show right if left is being hidden
       return !prev;
     });
+    setSplitPosition(0);
   }, [rightVisible]);
 
   const toggleRight = useCallback(() => {
@@ -80,7 +81,13 @@ export const useSplitScreen = (initialSplit = 50, minWidth = 200) => {
           setRightVisible(true);
         }
       }
+
+      if (!leftVisible) {
+        setSplitPosition(0);
+      }
     };
+
+    
 
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -96,6 +103,6 @@ export const useSplitScreen = (initialSplit = 50, minWidth = 200) => {
     handleMouseDown,
     toggleLeft,
     toggleRight,
-    showScreens
+    showScreens,
   };
 };

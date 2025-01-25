@@ -148,12 +148,11 @@ export default function CodeEditor() {
     }));
   };
 
-  console.log(executionResult)
 
   return (
-    <div className="h-full w-full bg-[#0a0a0f]/80 relative">
+    <div className="h-full w-full bg-[#0a0a0f]/80 overflow-hidden">
       <div className=" py-2 px-2 relative h-full w-full">
-        <div className=" absolute left-0 right-0 z-[99] px-2">
+        <div className=" absolute left-0 right-0 z-[99] px-2 w-full">
           <header
             className=" h-[1.5cm] px-2 rounded-[10px] flex items-center justify-between -inset-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 
               "

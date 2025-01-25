@@ -24,39 +24,40 @@ export const SplitScreen = ({
     showScreens,
   } = useSplitScreen();
 
+  console.log("spliited position", splitPosition)
   return (
     <div className="h-screen w-full flex overflow-hidden">
-      {(leftVisible || !rightVisible) && (
-        <div
-          className="h-full relative"
-          style={{ width: rightVisible ? `${splitPosition}%` : "100%" }}
+      <div
+        className={`h-full relative transition-all duration-300 ${
+          !leftVisible && `w-0 opacity-0 pointer-events-none`
+        } `}
+        style={{
+          width: rightVisible ? `${splitPosition}%` : "100%",
+        }}
+      >
+        {LeftPage}
+        <Button
+          className="absolute top-2 right-2 bg-gradient-to-b from-blue-500/50 to-purple-500/50 rounded-[8px] font-extrabold border-white/50 opacity-30 text-white hover:opacity-100 transition-all z-[999]"
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            if (!rightVisible) {
+              console.log("right is visible");
+              return showScreens();
+            }
+            console.log("Toogle left");
+            toggleLeft();
+          }}
         >
-          {LeftPage}
-          <Button
-            className="absolute top-2 right-2
-            bg-gradient-to-b from-blue-500/50 to-purple-500/50
-             rounded-[8px] font-extrabold border-white/50
-              opacity-30 text-white
-              hover:opacity-100
-             transition-all
-             z-[999]
-            "
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              if (!rightVisible) {
-                return showScreens();
-              }
-              toggleLeft();
-            }}
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-        </div>
-      )}
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+      </div>
+
       {leftVisible && rightVisible && (
         <div
-          className={`h-full z-[999] relative overflow-visible flex justify-center items-center w-[0.15cm] bg-gradient-to-b from-blue-500/50 to-purple-500/50  cursor-col-resize ${
+          className={`h-full z-[999] relative overflow-visible flex justify-center items-center w-[0.15cm] bg-gradient-to-b from-blue-500/50 to-purple-500/50 cursor-col-resize 
+            
+            ${
             isDragging
               ? "hover:bg-gradient-to-b hover:from-blue-500 hover:to-purple-500"
               : ""
@@ -68,35 +69,31 @@ export const SplitScreen = ({
           </div>
         </div>
       )}
-      {(rightVisible || !leftVisible) && (
-        <div
-          className="h-full  relative"
-          style={{ width: leftVisible ? `${100 - splitPosition}%` : "100%" }}
-        >
-          {RightPage}
 
-          <Button
-            className="absolute top-2 left-2
-            bg-gradient-to-b from-blue-500/50 to-purple-500/50
-             rounded-[8px] font-extrabold border-white/50
-              opacity-50 text-white
-              hover:opacity-100
-             transition-all
-             z-[999]
-            "
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              if (!leftVisible) {
-                return showScreens();
-              }
-              toggleRight();
-            }}
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-        </div>
-      )}
+      <div
+        className={`h-full relative transition-all duration-300 ${
+          !rightVisible && `w-0 opacity-0 pointer-events-none overflow-hidden`
+        } `}
+        style={{
+          width: leftVisible ? `${100 - splitPosition}%` : "100%",
+        }}
+      >
+        {RightPage}
+
+        <Button
+          className="absolute top-2 left-2 bg-gradient-to-b from-blue-500/50 to-purple-500/50 rounded-[8px] font-extrabold border-white/50 opacity-50 text-white hover:opacity-100 transition-all z-[999]"
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            if (!leftVisible) {
+              return showScreens();
+            }
+            toggleRight();
+          }}
+        >
+          <ChevronRight className="h-6 w-6" />
+        </Button>
+      </div>
     </div>
   );
 };
