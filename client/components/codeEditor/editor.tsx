@@ -18,6 +18,19 @@ import { LANGUAGE_CONFIG } from "./config/languages";
 import { THEME_OPTIONS } from "./config/themes";
 import type { EditorState, ExecutionResult } from "../types/editor.ts";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setCode,
+  setError,
+  setExecutionResult,
+  setIsRunning,
+  setLanguage,
+  setOutput,
+  setTerminal,
+  setTerminalHeight,
+  setTheme,
+  toggleTerminal,
+} from "@/redux/slices/EditorSlices";
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 22, 24];
 
@@ -40,12 +53,19 @@ export default function CodeEditor() {
     }
     return DEFAULT_STATE;
   });
+  const dispatch = useDispatch();
+  const {
+    code,
+    language,
+    theme,
+    fontSize,
+    isTerminalVisible,
+    output,
+    error,
+    isRunning,
+    terminalHeight,
+  } = useSelector((state: RootState) => state.codeEditor);
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [output, setOutput] = useState("");
-  const [executionResult, setExecutionResult] =
-    useState<ExecutionResult | null>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   useEffect(() => {
@@ -66,14 +86,14 @@ export default function CodeEditor() {
     const code = getCode();
 
     if (!code) {
-      setError("Please enter some code");
+      dispatch(setError("Please enter some code"));
       return;
     }
 
-    setIsRunning(true);
-    setError(null);
-    setOutput("");
-    setEditorState((prev) => ({ ...prev, isTerminalVisible: true }));
+    dispatch(setIsRunning(true));
+    dispatch(setError(null));
+    dispatch(setOutput(""));
+    dispatch(setTerminal(true));
 
     try {
       const runtime = LANGUAGE_CONFIG[editorState.language].pistonRuntime;
@@ -89,65 +109,49 @@ export default function CodeEditor() {
       const data = response.data;
 
       if (data.message) {
-        setError(data.message);
-        setExecutionResult({ code, output: "", error: data.message });
+        dispatch(setError(data.message));
+        dispatch(setExecutionResult({ code, output: "", error: data.message }));
         return;
       }
 
       if (data.compile && data.compile.code !== 0) {
         const compileError = data.compile.stderr || data.compile.output;
-        setError(compileError);
-        setExecutionResult({ code, output: "", error: compileError });
+        dispatch(setError(compileError));
+        dispatch(setExecutionResult({ code, output: "", error: compileError }));
         return;
       }
 
       if (data.run && data.run.code !== 0) {
         const runtimeError = data.run.stderr || data.run.output;
-        setError(runtimeError);
-        setExecutionResult({ code, output: "", error: runtimeError });
+        dispatch(setError(runtimeError));
+        dispatch(setExecutionResult({ code, output: "", error: runtimeError }));
         return;
       }
 
       const outputResult = data.run.output;
-      setOutput(outputResult.trim());
-      setExecutionResult({ code, output: outputResult.trim(), error: null });
-
-      setEditorState((prev) => ({
-        ...prev,
-        lastOutput: {
-          output: outputResult.trim(),
-          error: null,
-          timestamp: Date.now(),
-        },
-      }));
+      dispatch(setOutput(outputResult.trim()));
+      dispatch(
+        setExecutionResult({ code, output: outputResult.trim(), error: null })
+      );
     } catch (err) {
       console.error("Error running code:", err);
-      setError("Error running code");
-      setExecutionResult({ code, output: "", error: "Error running code" });
+      dispatch(setError("Error running code"));
+      dispatch(
+        setExecutionResult({ code, output: "", error: "Error running code" })
+      );
     } finally {
-      setIsRunning(false);
+      dispatch(setIsRunning(false));
     }
   };
 
-  const toggleTerminal = () => {
-    setEditorState((prev) => ({
-      ...prev,
-      isTerminalVisible: !prev.isTerminalVisible,
-    }));
-  };
-
   const handleTerminalHeightChange = (height: number) => {
-    setEditorState((prev) => ({ ...prev, terminalHeight: height }));
+    dispatch(setTerminalHeight(height));
   };
 
   const handleLanguageChange = (language: string) => {
-    setEditorState((prev) => ({
-      ...prev,
-      language,
-      code: LANGUAGE_CONFIG[language].defaultCode,
-    }));
+    dispatch(setLanguage(language));
+    dispatch(setCode(LANGUAGE_CONFIG[language].defaultCode));
   };
-
 
   return (
     <div className="h-full w-full bg-[#0a0a0f]/80 overflow-hidden">
@@ -186,10 +190,7 @@ export default function CodeEditor() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <Select
-                value={editorState.language}
-                onValueChange={handleLanguageChange}
-              >
+              <Select value={language} onValueChange={handleLanguageChange}>
                 <SelectTrigger className="w-[180px] bg-[#0a0a0f]/50 text-white hover:bg-[#0a0a0f]/90 transition-colors rounded-xl outline-none border-0 font-semibold">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
@@ -202,7 +203,7 @@ export default function CodeEditor() {
                     >
                       {/* {lang.charAt(0).toUpperCase() + lang.slice(1)} */}
                       <div className=" flex flex-row items-center gap-2">
-                        {editorState.language == lang && (
+                        {language == lang && (
                           <div className=" h-[.3cm] w-[.3cm] rounded-full bg-emerald-700"></div>
                         )}
                         <div className="">
@@ -215,10 +216,8 @@ export default function CodeEditor() {
               </Select>
 
               <Select
-                value={editorState.theme}
-                onValueChange={(value) =>
-                  setEditorState((prev) => ({ ...prev, theme: value }))
-                }
+                value={theme}
+                onValueChange={(value) => dispatch(setTheme(value))}
               >
                 <SelectTrigger className="w-[180px] bg-[#0a0a0f]/50 text-white hover:bg-[#0a0a0f]/90 transition-colors rounded-xl outline-none border-0 font-semibold">
                   <SelectValue placeholder="Select theme" />
@@ -277,9 +276,11 @@ export default function CodeEditor() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={toggleTerminal}
+                onClick={() => {
+                  dispatch(toggleTerminal());
+                }}
                 className={
-                  editorState.isTerminalVisible
+                  isTerminalVisible
                     ? "bg-gray-700  rounded-[10px]"
                     : " rounded-[10px]"
                 }
@@ -306,22 +307,18 @@ export default function CodeEditor() {
           <div className="overflow-hidden border-2 border-gradient-to-r border-blue-500/20 rounded-[10px]  h-full">
             <Editor
               height="100%"
-              defaultLanguage={
-                LANGUAGE_CONFIG[editorState.language].monacoLanguage
-              }
-              language={LANGUAGE_CONFIG[editorState.language].monacoLanguage}
-              value={editorState.code}
-              theme={editorState.theme}
+              defaultLanguage={LANGUAGE_CONFIG[language].monacoLanguage}
+              language={LANGUAGE_CONFIG[language].monacoLanguage}
+              value={code}
+              theme={theme}
               options={{
-                fontSize: editorState.fontSize,
+                fontSize: fontSize,
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
                 fontFamily: "JetBrains Mono, monospace",
                 padding: { top: 20 },
               }}
-              onChange={(value) =>
-                setEditorState((prev) => ({ ...prev, code: value || "" }))
-              }
+              onChange={(value) => dispatch(setCode(value || ""))}
               onMount={handleEditorDidMount}
               className="border-gray-700"
             />
@@ -330,16 +327,16 @@ export default function CodeEditor() {
       </div>
 
       <Terminal
-        isVisible={editorState.isTerminalVisible}
-        height={editorState.terminalHeight}
+        isVisible={isTerminalVisible}
+        height={terminalHeight}
         output={output}
         error={error}
         isRunning={isRunning}
-        onToggle={toggleTerminal}
+        onToggle={() => {
+          dispatch(toggleTerminal());
+        }}
         onHeightChange={handleTerminalHeightChange}
-        onClose={() =>
-          setEditorState((prev) => ({ ...prev, isTerminalVisible: false }))
-        }
+        onClose={() => dispatch(setTerminal(false))}
       />
     </div>
   );

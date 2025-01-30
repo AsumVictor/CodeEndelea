@@ -1,8 +1,17 @@
-"use client"
+"use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Mic, Camera, XCircle, CheckCircle } from "lucide-react";
+import { PermissionStatus } from "@/components/record/PermissionStatus";
 
 const ScreenCameraRecorder: React.FC = () => {
+  // Checking permission here
+  const [micPermission, setMicPermission] = useState<boolean | null>(null);
+  const [cameraPermission, setCameraPermission] = useState<boolean | null>(
+    null
+  );
+
   const [isRecording, setIsRecording] = useState(false);
   const [screenChunks, setScreenChunks] = useState<Blob[]>([]);
   const [cameraChunks, setCameraChunks] = useState<Blob[]>([]);
@@ -35,8 +44,10 @@ const ScreenCameraRecorder: React.FC = () => {
       cameraStreamRef.current = cameraStream;
 
       // Attach streams to video elements for live preview
-      if (screenVideoRef.current) screenVideoRef.current.srcObject = screenStream;
-      if (cameraVideoRef.current) cameraVideoRef.current.srcObject = cameraStream;
+      if (screenVideoRef.current)
+        screenVideoRef.current.srcObject = screenStream;
+      if (cameraVideoRef.current)
+        cameraVideoRef.current.srcObject = cameraStream;
 
       // Initialize MediaRecorders
       const screenRecorder = new MediaRecorder(screenStream);
@@ -47,11 +58,13 @@ const ScreenCameraRecorder: React.FC = () => {
 
       // Store recorded chunks
       screenRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) setScreenChunks((prev) => [...prev, event.data]);
+        if (event.data.size > 0)
+          setScreenChunks((prev) => [...prev, event.data]);
       };
 
       cameraRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) setCameraChunks((prev) => [...prev, event.data]);
+        if (event.data.size > 0)
+          setCameraChunks((prev) => [...prev, event.data]);
       };
 
       // Start recording
@@ -96,15 +109,84 @@ const ScreenCameraRecorder: React.FC = () => {
     console.log(`${fileName} saved.`);
   };
 
+  // Handle permission
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  const checkPermissions = async () => {
+    try {
+      const micResult = await navigator.permissions.query({
+        name: "microphone" as PermissionName,
+      });
+      setMicPermission(micResult.state === "granted");
+
+      const cameraResult = await navigator.permissions.query({
+        name: "camera" as PermissionName,
+      });
+      setCameraPermission(cameraResult.state === "granted");
+    } catch (error) {
+      console.error("Error checking permissions:", error);
+    }
+  };
+
+  const requestPermissions = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      checkPermissions();
+    } catch (error) {
+      console.error("Error requesting permissions:", error);
+      setMicPermission(false);
+      setCameraPermission(false);
+    }
+  };
+
   return (
     <div style={styles.container}>
       <h1>Screen & Camera Recorder</h1>
       <p>Record your screen and webcam separately and save both videos!</p>
+
+      {/* Permission before */}
+      <h1 className="text-3xl font-bold mb-8">Device Permissions</h1>
+
+      <div className="space-y-6 w-full max-w-md">
+        <PermissionStatus
+          icon={<Mic className="w-6 h-6" />}
+          name="Microphone"
+          status={micPermission}
+        />
+        <PermissionStatus
+          icon={<Camera className="w-6 h-6" />}
+          name="Camera"
+          status={cameraPermission}
+        />
+      </div>
+
+      {(micPermission === false || cameraPermission === false) && (
+        <div className="mt-8">
+          <Button
+            onClick={requestPermissions}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Allow Microphone and Camera
+          </Button>
+        </div>
+      )}
+
+      {micPermission === false && cameraPermission === false && (
+        <p className="mt-4 text-red-400">
+          Permission request failed. Please check your browser settings and try
+          again.
+        </p>
+      )}
+
+      {/* Permission */}
+
       <div>
         <button
-          style={styles.button}
           onClick={startRecording}
-          disabled={isRecording}
+          disabled={isRecording || !micPermission || !cameraPermission}
+          className=" px-5 bg-gray-800 py-3 disabled:opacity-0"
         >
           Start Recording
         </button>
@@ -112,10 +194,11 @@ const ScreenCameraRecorder: React.FC = () => {
           style={styles.button}
           onClick={stopRecording}
           disabled={!isRecording}
+          className=" px-5 bg-gray-800 py-3 disabled:opacity-0"
         >
           Stop Recording
         </button>
-        <button
+        {/* <button
           style={styles.button}
           onClick={() => saveRecording(screenChunks, "screen-recording.webm")}
           disabled={isRecording || screenChunks.length === 0}
@@ -128,21 +211,11 @@ const ScreenCameraRecorder: React.FC = () => {
           disabled={isRecording || cameraChunks.length === 0}
         >
           Save Camera Recording
-        </button>
+        </button> */}
       </div>
       <div style={styles.videoContainer}>
-        <video
-          ref={screenVideoRef}
-          autoPlay
-          muted
-          style={styles.video}
-        ></video>
-        <video
-          ref={cameraVideoRef}
-          autoPlay
-          muted
-          style={styles.video}
-        ></video>
+        <video ref={screenVideoRef} autoPlay muted style={styles.video}></video>
+        <video ref={cameraVideoRef} autoPlay muted style={styles.video}></video>
       </div>
     </div>
   );

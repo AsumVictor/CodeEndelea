@@ -5,6 +5,8 @@ import { useSplitScreen } from "../../hooks/useSplitScreen";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MdOutlineDragIndicator } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/Store";
 
 export const SplitScreen = ({
   LeftPage,
@@ -14,17 +16,17 @@ export const SplitScreen = ({
   RightPage: JSX.Element;
 }) => {
   const {
-    splitPosition,
     isDragging,
-    leftVisible,
-    rightVisible,
     handleMouseDown,
-    toggleLeft,
-    toggleRight,
-    showScreens,
+    toggleLeftPannel,
+    toggleRightPannel,
+    showScreensAll,
   } = useSplitScreen();
 
-  console.log("spliited position", splitPosition)
+  const { splitPosition, leftVisible, rightVisible } = useSelector(
+    (state: RootState) => state.splitScreen
+  );
+
   return (
     <div className="h-screen w-full flex overflow-hidden">
       <div
@@ -43,10 +45,10 @@ export const SplitScreen = ({
           onClick={() => {
             if (!rightVisible) {
               console.log("right is visible");
-              return showScreens();
+              return showScreensAll();
             }
             console.log("Toogle left");
-            toggleLeft();
+            toggleLeftPannel();
           }}
         >
           <ChevronLeft className="h-6 w-6" />
@@ -58,10 +60,10 @@ export const SplitScreen = ({
           className={`h-full z-[999] relative overflow-visible flex justify-center items-center w-[0.15cm] bg-gradient-to-b from-blue-500/50 to-purple-500/50 cursor-col-resize 
             
             ${
-            isDragging
-              ? "hover:bg-gradient-to-b hover:from-blue-500 hover:to-purple-500"
-              : ""
-          }`}
+              isDragging
+                ? "hover:bg-gradient-to-b hover:from-blue-500 hover:to-purple-500"
+                : ""
+            }`}
           onMouseDown={handleMouseDown}
         >
           <div className="bg-purple-500 py-3 absolute self-center flex justify-center items-center w-[.5cm] rounded-xl">
@@ -86,9 +88,9 @@ export const SplitScreen = ({
           size="icon"
           onClick={() => {
             if (!leftVisible) {
-              return showScreens();
+              return showScreensAll();
             }
-            toggleRight();
+            toggleRightPannel();
           }}
         >
           <ChevronRight className="h-6 w-6" />

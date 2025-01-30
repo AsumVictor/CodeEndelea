@@ -1,10 +1,24 @@
+import {
+  setLeftVisible,
+  setRightVisible,
+  setSplitPosition,
+  showScreens,
+  toggleLeft,
+  toggleRight,
+} from "@/redux/slices/SplitScreen";
+import { RootState } from "@/redux/Store";
 import { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export const useSplitScreen = (initialSplit = 50, minWidth = 200) => {
-  const [splitPosition, setSplitPosition] = useState(initialSplit);
+  // const [splitPosition, setSplitPosition] = useState(initialSplit);
   const [isDragging, setIsDragging] = useState(false);
-  const [leftVisible, setLeftVisible] = useState(true);
-  const [rightVisible, setRightVisible] = useState(true);
+  // const [leftVisible, setLeftVisible] = useState(true);
+  // const [rightVisible, setRightVisible] = useState(true);
+  const dispatch = useDispatch();
+  const { splitPosition, leftVisible, rightVisible } = useSelector(
+    (state: RootState) => state.splitScreen
+  );
 
   const handleMouseDown = useCallback(() => setIsDragging(true), []);
   const handleMouseUp = useCallback(() => setIsDragging(false), []);
@@ -13,35 +27,25 @@ export const useSplitScreen = (initialSplit = 50, minWidth = 200) => {
     (e: MouseEvent) => {
       if (isDragging) {
         const newPosition = (e.clientX / window.innerWidth) * 100;
-        setSplitPosition(newPosition);
+        dispatch(setSplitPosition(newPosition));
       }
     },
     [isDragging]
   );
 
-  const toggleLeft = useCallback(() => {
-    setLeftVisible((prev) => {
-      if (prev && !rightVisible) return true; // Prevent hiding if right is not visible
-      if (!prev && !rightVisible) setRightVisible(true); // Show right if left is being hidden
-      return !prev;
-    });
+  const toggleLeftPannel = useCallback(() => {
+    dispatch(toggleLeft());
     setSplitPosition(0);
   }, [rightVisible]);
 
-  const toggleRight = useCallback(() => {
-    setRightVisible((prev) => {
-      if (prev && !leftVisible) return true; // Prevent hiding if left is not visible
-      if (!prev && !leftVisible) setLeftVisible(true); // Show left if right is being hidden
-      return !prev;
-    });
+  const toggleRightPannel = useCallback(() => {
+    dispatch(toggleRight());
   }, [leftVisible]);
 
   // set visibility
 
-  const showScreens = useCallback(() => {
-    setRightVisible(true);
-    setLeftVisible(true);
-    setSplitPosition(initialSplit);
+  const showScreensAll = useCallback(() => {
+    dispatch(showScreens())
   }, [leftVisible]);
 
   useEffect(() => {
@@ -62,32 +66,30 @@ export const useSplitScreen = (initialSplit = 50, minWidth = 200) => {
       if (leftWidth < minWidth && rightWidth < minWidth) {
         // If both sections are too small, show the larger one
         if (leftWidth > rightWidth) {
-          setLeftVisible(true);
-          setRightVisible(false);
+          dispatch(setLeftVisible(true));
+          dispatch(setRightVisible(false));
         } else {
-          setLeftVisible(false);
-          setRightVisible(true);
+          dispatch(setLeftVisible(false));
+          dispatch(setRightVisible(true));
         }
       } else {
-        setLeftVisible(leftWidth >= minWidth);
-        setRightVisible(rightWidth >= minWidth);
+        dispatch(setLeftVisible(leftWidth >= minWidth));
+        dispatch(setRightVisible(rightWidth >= minWidth));
       }
 
       // Ensure at least one section is visible
       if (!leftVisible && !rightVisible) {
         if (leftWidth > rightWidth) {
-          setLeftVisible(true);
+          dispatch(setLeftVisible(true));
         } else {
-          setRightVisible(true);
+          dispatch(setRightVisible(true));
         }
       }
 
       if (!leftVisible) {
-        setSplitPosition(0);
+        dispatch(setSplitPosition(0));
       }
     };
-
-    
 
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -96,13 +98,10 @@ export const useSplitScreen = (initialSplit = 50, minWidth = 200) => {
   }, [splitPosition, minWidth]);
 
   return {
-    splitPosition,
     isDragging,
-    leftVisible,
-    rightVisible,
     handleMouseDown,
-    toggleLeft,
-    toggleRight,
-    showScreens,
+    toggleLeftPannel,
+    toggleRightPannel,
+    showScreensAll,
   };
 };

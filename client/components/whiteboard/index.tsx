@@ -5,13 +5,20 @@ import * as fabric from "fabric";
 import { Button } from "@/components/ui/button";
 import { Undo2, Redo2, Hand, HelpCircle } from "lucide-react";
 import { FloatingTools } from "./floating-tools";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/Store";
+import { setColor, setContent, setSize, setTool } from "@/redux/slices/whiteBoard";
 
 export default function CanvasEditor() {
+  const dispatch = useDispatch();
+  const { tool, color, size, content } = useSelector(
+    (state: RootState) => state.canvasEditor
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
-  const [tool, setTool] = useState<string>("draw");
-  const [color, setColor] = useState<string>("#000000");
-  const [size, setSize] = useState<number>(2);
+  // const [tool, setTool] = useState<string>("draw");
+  // const [color, setColor] = useState<string>("#000000");
+  // const [size, setSize] = useState<number>(2);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -22,7 +29,17 @@ export default function CanvasEditor() {
         isDrawingMode: true,
       });
 
+      // dispatch(setCanvas(fabricCanvas));
       setCanvas(fabricCanvas);
+
+      const updateObjects = () => {
+        dispatch(setContent(fabricCanvas.toJSON()))
+      };
+
+      // Listen to object addition, modification, and removal events
+      fabricCanvas.on("object:added", updateObjects);
+      fabricCanvas.on("object:modified", updateObjects);
+      fabricCanvas.on("object:removed", updateObjects);
 
       fabricCanvas.on("mouse:down", handleCanvasMouseDown);
 
@@ -108,12 +125,25 @@ export default function CanvasEditor() {
   };
 
   const handleToolSelect = (selectedTool: string) => {
-    setTool(selectedTool);
+    dispatch(setTool(selectedTool));
     if (selectedTool === "rectangle") addShape("rectangle");
     if (selectedTool === "circle") addShape("circle");
     if (selectedTool === "text") addText();
     // No need for a special case for 'draw' as it's handled in the useEffect
   };
+
+  const handleColor = (n: string) => {
+    dispatch(setColor(n));
+  };
+
+  const handleSize = (n: number) => {
+    dispatch(setSize(n));
+  };
+
+
+useEffect(()=>{
+  console.log(content)
+}, [content])
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
@@ -123,8 +153,8 @@ export default function CanvasEditor() {
 
       <FloatingTools
         onSelectTool={handleToolSelect}
-        onColorChange={setColor}
-        onSizeChange={setSize}
+        onColorChange={handleColor}
+        onSizeChange={handleSize}
         selectedTool={tool}
         color={color}
         size={size}
