@@ -15,7 +15,7 @@ export default function Upload() {
     if (uploadType === "pc") {
       router.push("/instructor/upload/preview")
     } else if (uploadType === "record") {
-      router.push("/instructor/code")
+      router.push("/instructor/upload/code")
       window.open("/instructor/upload/record", "_blank");
     }
   }

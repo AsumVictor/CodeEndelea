@@ -12,6 +12,9 @@ const ScreenCameraRecorder: React.FC = () => {
     null
   );
 
+  // getting all the state
+
+ 
   const [isRecording, setIsRecording] = useState(false);
   const [screenChunks, setScreenChunks] = useState<Blob[]>([]);
   const [cameraChunks, setCameraChunks] = useState<Blob[]>([]);
@@ -71,6 +74,7 @@ const ScreenCameraRecorder: React.FC = () => {
       screenRecorder.start();
       cameraRecorder.start();
       setIsRecording(true);
+      sendMessage()
 
       console.log("Recording started...");
     } catch (err) {
@@ -140,6 +144,32 @@ const ScreenCameraRecorder: React.FC = () => {
       setCameraPermission(false);
     }
   };
+
+ 
+
+ 
+
+  // Local storage pulling
+  const [message, setMessage] = useState("");
+
+  const sendMessage = () => {
+    // Write to localStorage
+    localStorage.setItem("sharedData", JSON.stringify({ message: "Hello from Tab Recording!" }));
+  };
+
+  useEffect(() => {
+    // Listen for changes in localStorage
+    window.addEventListener("storage", (event) => {
+      if (event.key === "sharedData") {
+        const newMessage = JSON.parse(event.newValue || "{}");
+        setMessage(newMessage.message); // Update state with the new message
+      }
+    });
+
+    return () => {
+      window.removeEventListener("storage", () => {});
+    };
+  }, []);
 
   return (
     <div style={styles.container}>

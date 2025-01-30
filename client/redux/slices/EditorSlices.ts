@@ -67,6 +67,7 @@ const codeEditorSlice = createSlice({
     setIsRunning: (state, action: PayloadAction<boolean>) => {
       state.isRunning = action.payload;
     },
+    
   },
 });
 
@@ -81,7 +82,8 @@ export const {
   setError,
   setExecutionResult,
   setIsRunning,
-  setTerminal
+  setTerminal,
+
 } = codeEditorSlice.actions;
 
 export default codeEditorSlice.reducer;
