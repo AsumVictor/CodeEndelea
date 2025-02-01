@@ -4,7 +4,9 @@ import CodeSpace from "../../../../components/editorStudio/index";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/Store";
 
-function Page() {
+function Page({ searchParams }: { searchParams: { id?: string } }) {
+  const { id } = searchParams;
+
   const editorState = useSelector((state: RootState) => state.codeEditor);
   const screenState = useSelector((state: RootState) => state.codeEditor);
   const canvasState = useSelector((state: RootState) => state.codeEditor);
@@ -50,18 +52,16 @@ function Page() {
   useEffect(() => {
     if (seconds % 3 === 0 && seconds !== 0) {
       updateStateHistory();
-      console.log(window.localStorage.getItem("stateHistory"))
+      console.log(window.localStorage.getItem("stateHistory"));
     }
   }, [seconds]);
 
-  const [message, setMessage] = useState("");
-
   useEffect(() => {
-    // Listen for changes in localStorage
     window.addEventListener("storage", (event) => {
-      if (event.key === "sharedData") {
+      const name = id || "shared";
+      if (event.key === name) {
         const newMessage = JSON.parse(event.newValue || "{}");
-        setMessage(newMessage.message); // Update state with the new message
+        setStart(newMessage.message);
       }
     });
 
@@ -70,15 +70,13 @@ function Page() {
     };
   }, []);
 
-  // You can control when the timer starts by updating the 'start' state
-  const handleStart = () => setStart(true);
-  const handleStop = () => setStart(false);
+  useEffect(() => {
+    console.log(start);
+  }, [start, setStart]);
 
   return (
     <div>
       <CodeSpace />
-      <button onClick={handleStart}>Start Timer</button>
-      <button onClick={handleStop}>Stop Timer</button>
     </div>
   );
 }

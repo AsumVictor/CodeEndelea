@@ -1,24 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { nanoid } from "@reduxjs/toolkit";
 
 export default function Upload() {
-  const [uploadType, setUploadType] = useState("")
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const router = useRouter()
+  const [uploadType, setUploadType] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    const id =  nanoid()
     if (uploadType === "pc") {
-      router.push("/instructor/upload/preview")
+      router.push("/instructor/upload/submit");
     } else if (uploadType === "record") {
-      router.push("/instructor/upload/code")
-      window.open("/instructor/upload/record", "_blank");
+      router.push(`/instructor/upload/code?id=${id}`);
+      window.open(`/instructor/upload/record?id=${id}`, "_blank");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 p-8">
@@ -38,7 +40,10 @@ export default function Upload() {
         className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-md mx-auto"
       >
         <div className="mb-4">
-          <label htmlFor="uploadType" className="block text-sm font-medium text-gray-300">
+          <label
+            htmlFor="uploadType"
+            className="block text-sm font-medium text-gray-300"
+          >
             Upload Type
           </label>
           <select
@@ -54,7 +59,10 @@ export default function Upload() {
           </select>
         </div>
         <div className="mb-4">
-          <label htmlFor="title" className="block text-sm font-medium text-gray-300">
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-gray-300"
+          >
             Video Title
           </label>
           <input
@@ -67,7 +75,10 @@ export default function Upload() {
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-300">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-300"
+          >
             Description
           </label>
           <textarea
@@ -87,6 +98,5 @@ export default function Upload() {
         </button>
       </motion.form>
     </div>
-  )
+  );
 }
-

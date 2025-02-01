@@ -4,20 +4,24 @@ import React, { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, Camera, XCircle, CheckCircle } from "lucide-react";
 import { PermissionStatus } from "@/components/record/PermissionStatus";
+import { useRouter } from "next/navigation";
 
-const ScreenCameraRecorder: React.FC = () => {
-  // Checking permission here
+const ScreenCameraRecorder = ({
+  searchParams,
+}: {
+  searchParams: { id?: string };
+}) => {
+  const { id } = searchParams;
+  const router = useRouter();
+
   const [micPermission, setMicPermission] = useState<boolean | null>(null);
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(
     null
   );
 
-  // getting all the state
-
- 
   const [isRecording, setIsRecording] = useState(false);
-  const [screenChunks, setScreenChunks] = useState<Blob[]>([]);
-  const [cameraChunks, setCameraChunks] = useState<Blob[]>([]);
+  let screenChunks: Blob[] = [];
+  let cameraChunks: Blob[] = [];
 
   const screenStreamRef = useRef<MediaStream | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -28,71 +32,81 @@ const ScreenCameraRecorder: React.FC = () => {
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
 
+  const [is_shown, setIsShown] = useState(false);
+
   const startRecording = async () => {
     try {
-      // Get screen stream
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: { displaySurface: "browser" },
-        audio: false,
-      });
-
-      // Get camera stream
-      const cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
         audio: true,
       });
 
-      // Assign streams to refs
+      const cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+
       screenStreamRef.current = screenStream;
       cameraStreamRef.current = cameraStream;
 
-      // Attach streams to video elements for live preview
       if (screenVideoRef.current)
         screenVideoRef.current.srcObject = screenStream;
       if (cameraVideoRef.current)
         cameraVideoRef.current.srcObject = cameraStream;
 
-      // Initialize MediaRecorders
       const screenRecorder = new MediaRecorder(screenStream);
       const cameraRecorder = new MediaRecorder(cameraStream);
 
       screenRecorderRef.current = screenRecorder;
       cameraRecorderRef.current = cameraRecorder;
 
-      // Store recorded chunks
       screenRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0)
-          setScreenChunks((prev) => [...prev, event.data]);
+        if (event.data.size > 0) {
+          screenChunks.push(event.data);
+        }
       };
 
       cameraRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0)
-          setCameraChunks((prev) => [...prev, event.data]);
+        if (event.data.size > 0) {
+          cameraChunks.push(event.data);
+        }
       };
 
-      // Start recording
+      screenStream.getVideoTracks()[0].addEventListener("ended", () => {
+        stopRecording();
+        sendMessage(false);
+      });
+
       screenRecorder.start();
       cameraRecorder.start();
       setIsRecording(true);
-      sendMessage()
-
-      console.log("Recording started...");
+      sendMessage(true);
     } catch (err) {
       console.error("Error starting recording:", err);
     }
   };
 
   const stopRecording = () => {
-    // Stop screen recording
     if (screenRecorderRef.current) {
+      screenRecorderRef.current.onstop = () => {
+        saveRecording(
+          [...screenChunks],
+          `${generateRandomNumberString("screen_", 12)}`
+        );
+      };
       screenRecorderRef.current.stop();
       if (screenStreamRef.current) {
         screenStreamRef.current.getTracks().forEach((track) => track.stop());
       }
     }
 
-    // Stop camera recording
     if (cameraRecorderRef.current) {
+      cameraRecorderRef.current.onstop = () => {
+        saveRecording(
+          [...cameraChunks],
+          `${generateRandomNumberString("camera_", 12)}`
+        );
+      };
       cameraRecorderRef.current.stop();
       if (cameraStreamRef.current) {
         cameraStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -100,7 +114,8 @@ const ScreenCameraRecorder: React.FC = () => {
     }
 
     setIsRecording(false);
-    console.log("Recording stopped.");
+    sendMessage(false);
+    setIsShown(true);
   };
 
   const saveRecording = (chunks: Blob[], fileName: string) => {
@@ -110,7 +125,6 @@ const ScreenCameraRecorder: React.FC = () => {
     a.href = url;
     a.download = fileName;
     a.click();
-    console.log(`${fileName} saved.`);
   };
 
   // Handle permission
@@ -145,24 +159,15 @@ const ScreenCameraRecorder: React.FC = () => {
     }
   };
 
- 
-
- 
-
-  // Local storage pulling
-  const [message, setMessage] = useState("");
-
-  const sendMessage = () => {
-    // Write to localStorage
-    localStorage.setItem("sharedData", JSON.stringify({ message: "Hello from Tab Recording!" }));
+  const sendMessage = (data: boolean) => {
+    const name = id || "shared";
+    localStorage.setItem(name, JSON.stringify({ message: data }));
   };
 
   useEffect(() => {
-    // Listen for changes in localStorage
     window.addEventListener("storage", (event) => {
       if (event.key === "sharedData") {
         const newMessage = JSON.parse(event.newValue || "{}");
-        setMessage(newMessage.message); // Update state with the new message
       }
     });
 
@@ -171,8 +176,15 @@ const ScreenCameraRecorder: React.FC = () => {
     };
   }, []);
 
+  const generateRandomNumberString = (prefix: string, length: number) => {
+    const randomNumber = Math.floor(Math.random() * Math.pow(10, length))
+      .toString()
+      .padStart(length, "0");
+    return prefix + randomNumber;
+  };
+
   return (
-    <div style={styles.container}>
+    <div className="relative h-screen flex justify-center items-center flex-col py-10">
       <h1>Screen & Camera Recorder</h1>
       <p>Record your screen and webcam separately and save both videos!</p>
 
@@ -228,25 +240,34 @@ const ScreenCameraRecorder: React.FC = () => {
         >
           Stop Recording
         </button>
-        {/* <button
-          style={styles.button}
-          onClick={() => saveRecording(screenChunks, "screen-recording.webm")}
-          disabled={isRecording || screenChunks.length === 0}
-        >
-          Save Screen Recording
-        </button>
-        <button
-          style={styles.button}
-          onClick={() => saveRecording(cameraChunks, "camera-recording.webm")}
-          disabled={isRecording || cameraChunks.length === 0}
-        >
-          Save Camera Recording
-        </button> */}
       </div>
-      <div style={styles.videoContainer}>
-        <video ref={screenVideoRef} autoPlay muted style={styles.video}></video>
-        <video ref={cameraVideoRef} autoPlay muted style={styles.video}></video>
-      </div>
+
+      {is_shown && (
+        <div className=" flex justify-center items-center absolute top-0 left-0 w-full h-full backdrop-blur-xl">
+          <div className="px-4 py-3 w-[12cm] h-[8cm] bg-gray-400/20 rounded-2xl flex flex-col gap-2">
+            <p className=" text-center">
+              Do you want to upload the saved video right now?
+            </p>
+            <Button
+              className=" bg-red-400 text-red-700 hover:bg-red-400/40 rounded-[0.5rem]"
+              onClick={() => {
+                router.push(`/instructor/dashboard`);
+              }}
+            >
+              Upload Later
+            </Button>
+            <Button
+              onClick={() => {
+                let session = new Date().toISOString();
+                router.push(`/instructor/upload/submit?q${session}`);
+              }}
+              className=" bg-emerald-400 text-emerald-700 hover:bg-emerald-400/70 rounded-[0.5rem]"
+            >
+              Upload Now
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
