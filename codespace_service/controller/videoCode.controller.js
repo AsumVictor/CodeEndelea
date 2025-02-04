@@ -38,7 +38,7 @@ export const get_code_at = catchAsyncError(async (req, res, next) => {
 
     const result = await VideoCodeModel.findOne({
       vid_id,
-      time_stamp,
+      time_stamp: Math.ceil(time_stamp / 3) * 3,
     });
 
     res.status(200).json(result);
