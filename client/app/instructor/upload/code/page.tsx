@@ -50,9 +50,8 @@ function Page({ searchParams }: { searchParams: { id?: string } }) {
   }, [start]); // Re-run the effect when 'start' changes
 
   useEffect(() => {
-    if (seconds % 3 === 0 && seconds !== 0) {
+    if (seconds % 1 === 0 && seconds !== 0) {
       updateStateHistory();
-      console.log(window.localStorage.getItem(`code_${id}`));
     }
   }, [seconds]);
 

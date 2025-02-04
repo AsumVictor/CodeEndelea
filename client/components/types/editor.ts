@@ -40,6 +40,7 @@ export interface codeSpace {
 }
 
 export interface VideoMetaData {
+  _id: string
   title: string;
   description: string;
   length: number;

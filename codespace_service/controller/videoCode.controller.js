@@ -2,6 +2,7 @@ import catchAsyncError from "../middleware/catchAsyncError.js";
 import aws from "aws-sdk";
 import ResponseError from "../utilities/ErrorHandler.js";
 import VideoCodeModel from "../model/video_code.model.js";
+const RATE = 1;
 
 // Just initialing the chunking here
 export const upload_code = catchAsyncError(async (req, res, next) => {
@@ -38,7 +39,7 @@ export const get_code_at = catchAsyncError(async (req, res, next) => {
 
     const result = await VideoCodeModel.findOne({
       vid_id,
-      time_stamp: Math.ceil(time_stamp / 3) * 3,
+      time_stamp: Math.ceil(time_stamp / RATE) * RATE,
     });
 
     res.status(200).json(result);
