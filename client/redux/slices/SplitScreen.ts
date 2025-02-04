@@ -1,7 +1,7 @@
 // features/splitScreenSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface SplitScreenState {
+export interface SplitScreenState {
   splitPosition: number;
   leftVisible: boolean;
   rightVisible: boolean;
@@ -21,25 +21,24 @@ const splitScreenSlice = createSlice({
       state.splitPosition = action.payload;
     },
     toggleLeft: (state) => {
-      
-      if(state.leftVisible && !state.rightVisible){
+      if (state.leftVisible && !state.rightVisible) {
         state.leftVisible = true;
-        return
+        return;
       }
-      if(!state.leftVisible && !state.rightVisible){
-        state.rightVisible = true
+      if (!state.leftVisible && !state.rightVisible) {
+        state.rightVisible = true;
       }
 
-      state.leftVisible = !state.leftVisible
-      state.splitPosition = 0
+      state.leftVisible = !state.leftVisible;
+      state.splitPosition = 0;
     },
     toggleRight: (state) => {
-      if(state.rightVisible && !state.leftVisible){
+      if (state.rightVisible && !state.leftVisible) {
         state.rightVisible = true;
-        return
+        return;
       }
-      if(!state.rightVisible && !state.leftVisible){
-        state.leftVisible = true
+      if (!state.rightVisible && !state.leftVisible) {
+        state.leftVisible = true;
       }
 
       state.rightVisible = !state.rightVisible;
@@ -55,10 +54,22 @@ const splitScreenSlice = createSlice({
     setRightVisible: (state, action: PayloadAction<boolean>) => {
       state.rightVisible = action.payload;
     },
+    setScreenStateTo: (state, action: PayloadAction<SplitScreenState>) => {
+      state.splitPosition = action.payload.splitPosition;
+      state.leftVisible = action.payload.leftVisible;
+      state.rightVisible = action.payload.rightVisible;
+    },
   },
 });
 
-export const { setSplitPosition, toggleLeft, toggleRight, showScreens, setRightVisible, setLeftVisible } =
-  splitScreenSlice.actions;
+export const {
+  setSplitPosition,
+  setScreenStateTo,
+  toggleLeft,
+  toggleRight,
+  showScreens,
+  setRightVisible,
+  setLeftVisible,
+} = splitScreenSlice.actions;
 
 export default splitScreenSlice.reducer;

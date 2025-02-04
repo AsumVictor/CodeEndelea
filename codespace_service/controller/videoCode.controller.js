@@ -30,7 +30,7 @@ export const upload_code = catchAsyncError(async (req, res, next) => {
 
 export const get_code_at = catchAsyncError(async (req, res, next) => {
   try {
-    const { vid_id, time_stamp } = req.body;
+    const { vid_id, time_stamp } = req.query;
 
     if ((!vid_id, !time_stamp)) {
       return next(new ResponseError("All fields are required"));

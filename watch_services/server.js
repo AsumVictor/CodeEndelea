@@ -1,9 +1,6 @@
 import db_connect from "./config/db.js";
 import app from "./app.js";
 import dotenv from "dotenv";
-import Kafka_controller from "./kafka/kafka.config.js";
-import { update_video_url } from "./controller/upload.controller.js";
-import { consumeMessages } from "./kafka/consume.job.js";
 
 // connect to environment variables
 if (
@@ -21,11 +18,6 @@ process.on("unCaughtException", (err) => {
   console.log("Server shutting down");
 });
 
-consumeMessages("update_url", async (value) => {
-  const { url, field, _id } = value;
-  console.log("Recieved in server:", { url, field, _id })
-  update_video_url(field, url, _id);
-});
 
 const server = app.listen(process.env.PORT, async (err) => {
   // connect to database

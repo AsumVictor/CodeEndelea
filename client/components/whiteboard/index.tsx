@@ -141,10 +141,6 @@ export default function CanvasEditor() {
   };
 
 
-useEffect(()=>{
-  console.log(content)
-}, [content])
-
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
       {/* Main Canvas */}
