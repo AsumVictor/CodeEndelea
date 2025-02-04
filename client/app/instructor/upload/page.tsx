@@ -4,21 +4,43 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { nanoid } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export default function Upload() {
   const [uploadType, setUploadType] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id =  nanoid()
-    if (uploadType === "pc") {
-      router.push("/instructor/upload/submit");
-    } else if (uploadType === "record") {
-      router.push(`/instructor/upload/code?id=${id}`);
-      window.open(`/instructor/upload/record?id=${id}`, "_blank");
+
+    if (title.trim() == "" || description.trim() == "") {
+      console.log("Empty fileds")
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/upload/metadata",
+        {
+          title,
+          description,
+        }
+      );
+      const { _id } = response.data;
+
+      if (uploadType === "pc") {
+        router.push("/instructor/upload/submit");
+      } else if (uploadType === "record") {
+        router.push(`/instructor/upload/code?id=${_id}`);
+        window.open(`/instructor/upload/record?id=${_id}`, "_blank");
+      }
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
     }
   };
 
@@ -92,7 +114,9 @@ export default function Upload() {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-300"
+          className={`w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-300 ${
+            isLoading ? "opacity-40" : ""
+          }`}
         >
           Continue
         </button>

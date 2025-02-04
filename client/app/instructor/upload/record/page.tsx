@@ -38,12 +38,12 @@ const ScreenCameraRecorder = ({
     try {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: { displaySurface: "browser" },
-        audio: true,
+        audio: false,
       });
 
       const cameraStream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: false,
+        audio: true,
       });
 
       screenStreamRef.current = screenStream;
@@ -259,7 +259,9 @@ const ScreenCameraRecorder = ({
             <Button
               onClick={() => {
                 let session = new Date().toISOString();
-                router.push(`/instructor/upload/submit?q${session}`);
+                router.push(
+                  `/instructor/upload/submit?session=${session}&id=${id}`
+                );
               }}
               className=" bg-emerald-400 text-emerald-700 hover:bg-emerald-400/70 rounded-[0.5rem]"
             >

@@ -13,7 +13,7 @@ export default function UploadPage({
   searchParams: { id?: string; session?: string };
 }) {
   const { session, id } = searchParams;
-
+  console.log(id);
   const [screenVideo, setScreenVideo] = useState<File | null>(null);
   const [cameraVideo, setCameraVideo] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);

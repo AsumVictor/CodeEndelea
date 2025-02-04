@@ -17,7 +17,9 @@ export const Transcode = async (title, url, field, _id) => {
   });
 
   const bucketName = process.env.AWS_BUCKET_NAME;
-  const hlsFolder = `hsl/${_id}`;
+  const hlsFolder = `hsl/${_id}${
+    Math.floor(Math.random() * 1000000) + Math.ceil(Math.random() * 3178)
+  }`;
 
   console.log("Starting script");
   console.time("req_time");
@@ -64,7 +66,7 @@ export const Transcode = async (title, url, field, _id) => {
 
       const uploadParams = {
         Bucket: bucketName,
-        Key: `${hlsFolder}/${file}`,
+        Key: `hls/${_id}/${file}`,
         Body: fileStream,
         ContentType: file.endsWith(".ts")
           ? "video/mp2t"
