@@ -19,7 +19,7 @@ const corsOptions = {
         }
       : "*",
   credentials: true,
-  methods: ["POST"],
+  methods: ["POST","GET"],
 };
 
 app.use(cors(corsOptions));
