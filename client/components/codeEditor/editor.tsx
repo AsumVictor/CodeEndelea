@@ -16,13 +16,13 @@ import axios from "axios";
 import { Terminal } from "./terminal";
 import { LANGUAGE_CONFIG } from "./config/languages";
 import { THEME_OPTIONS } from "./config/themes";
-import type { EditorState, ExecutionResult } from "../types/editor.ts";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setCode,
   setError,
   setExecutionResult,
+  setFontSize,
   setIsRunning,
   setLanguage,
   setOutput,
@@ -31,28 +31,11 @@ import {
   setTheme,
   toggleTerminal,
 } from "@/redux/slices/EditorSlices";
+import { RootState } from "@/redux/Store";
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 22, 24];
 
-const DEFAULT_STATE: EditorState = {
-  code: LANGUAGE_CONFIG.javascript.defaultCode,
-  language: "javascript",
-  theme: "vs-dark",
-  fontSize: 14,
-  terminalHeight: 300,
-  isTerminalVisible: false,
-};
-
 export default function CodeEditor() {
-  const [editorState, setEditorState] = useState<EditorState>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("editorState");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    }
-    return DEFAULT_STATE;
-  });
   const dispatch = useDispatch();
   const {
     code,
@@ -67,10 +50,6 @@ export default function CodeEditor() {
   } = useSelector((state: RootState) => state.codeEditor);
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem("editorState", JSON.stringify(editorState));
-  }, [editorState]);
 
   const handleEditorDidMount = (
     editor: monaco.editor.IStandaloneCodeEditor
@@ -96,7 +75,8 @@ export default function CodeEditor() {
     dispatch(setTerminal(true));
 
     try {
-      const runtime = LANGUAGE_CONFIG[editorState.language].pistonRuntime;
+      const runtime = LANGUAGE_CONFIG[language].pistonRuntime;
+      console.log(runtime);
       const response = await axios.post(
         "https://emkc.org/api/v2/piston/execute",
         {
@@ -242,12 +222,9 @@ export default function CodeEditor() {
               </Select>
 
               <Select
-                value={editorState.fontSize.toString()}
+                value={fontSize.toString()}
                 onValueChange={(value) =>
-                  setEditorState((prev) => ({
-                    ...prev,
-                    fontSize: Number.parseInt(value),
-                  }))
+                  dispatch(setFontSize(Number.parseInt(value)))
                 }
               >
                 <SelectTrigger className="w-[100px] bg-[#0a0a0f]/50 text-white hover:bg-[#0a0a0f]/90 transition-colors rounded-xl outline-none border-0 font-semibold">
@@ -263,7 +240,7 @@ export default function CodeEditor() {
                       value={size.toString()}
                     >
                       <div className=" flex flex-row items-center gap-2">
-                        {editorState.fontSize == size && (
+                        {fontSize == size && (
                           <div className=" h-[.3cm] w-[.3cm] rounded-full bg-emerald-700"></div>
                         )}
                         <div className="">{size}px</div>
