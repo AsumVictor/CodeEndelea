@@ -13,6 +13,8 @@ import { editor, setEditorStateTo } from "@/redux/slices/EditorSlices";
 import { setScreenStateTo, SplitScreenState } from "@/redux/slices/SplitScreen";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
+import AnalysisAnimation from "@/components/watch_video/AnalyseAnimation";
+import VideoControls from "../../../../components/watch_video/VideoControls";
 
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -22,18 +24,58 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [videoMetadata, setVideoMetadata] = useState<VideoMetaData>();
   const videoCamRef = useRef<HTMLVideoElement>(null);
-
-  const router = useRouter();
+  const [isFetcing, setFetching] = useState(false);
   const { id } = useParams();
 
   // reduce
   const dispatch = useDispatch();
 
+  // Video contros
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const handlePlayPause = () => {
+    const cam = videoCamRef.current;
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        cam && cam.pause();
+      } else {
+        videoRef.current.play();
+        cam && cam.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration);
+    }
+  };
+
+  const handleSeek = (time: number) => {
+    const cam = videoCamRef.current;
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+      if (cam) {
+        cam.currentTime = time;
+      }
+      setCurrentTime(time);
+    }
+  };
+
   useEffect(() => {
     const video = videoRef.current;
     const cam = videoCamRef.current;
     if (!video || !videoMetadata || !cam) return;
-
+    handleLoadedMetadata();
     const useHls =
       videoMetadata.screen_hsl_url &&
       videoMetadata.camera_hsl_url &&
@@ -156,6 +198,7 @@ export default function Home() {
     if (isPlaying || !video) return;
 
     const getCode = async () => {
+      setFetching(true);
       try {
         const current_time = Math.floor(video.currentTime);
 
@@ -174,6 +217,9 @@ export default function Home() {
         dispatch(setScreenStateTo(data.screen_state));
         dispatch(setEditorStateTo(data.editor_state));
         dispatch(setCanvasStateTo(data.canvas_state));
+        setTimeout(() => {
+          setFetching(false);
+        }, 130);
       } catch (error) {
         console.error(error);
       }
@@ -188,10 +234,14 @@ export default function Home() {
           isPlaying ? "z-[9999]" : "z-[0]"
         }`}
       >
-        <VideoPlayer videoRef={videoRef} togglePlay={togglePlay} />
+        <VideoPlayer
+          videoRef={videoRef}
+          handleLoadedMetadata={handleLoadedMetadata}
+          handleTimeUpdate={handleTimeUpdate}
+        />
       </div>
       <CodeSpace />
-
+      {/* 
       <div className="absolute z-[99999] bottom-0 left-0 right-0 px-4 py-2 bg-black bg-opacity-50 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <button
@@ -228,8 +278,31 @@ export default function Home() {
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
+      <VideoControls
+        duration={duration}
+        currentTime={currentTime}
+        isPlaying={isPlaying}
+        onPlayPause={handlePlayPause}
+        onSeek={handleSeek}
+      />
+
+      {currentTime > 0 && !isPlaying && isFetcing && (
+        <div className="w-full absolute top-0 left-0 flex h-full bg-gray-400/40 backdrop-blur-lg z-[999]">
+          <AnalysisAnimation />
+        </div>
+      )}
+
+      {/* Update the cover picture */}
+      {currentTime == 0 && !isPlaying && (
+        <div className="fixed h-full w-full  z-[999]">
+          <img
+            src="https://coderpad.io/wp-content/uploads/2021/05/good_bad_direction.jpg"
+            alt=""
+          />
+        </div>
+      )}
       {/* Drag of video tutorials */}
       <motion.div
         drag

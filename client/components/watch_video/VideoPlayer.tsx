@@ -1,9 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useRef, useEffect, useState } from "react";
-import Hls from "hls.js";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+
 
 interface VideoPlayerProps {
   url: string;
@@ -12,8 +10,8 @@ interface VideoPlayerProps {
 
 const VideoPlayer = ({
   videoRef,
-  togglePlay,
-
+  handleTimeUpdate,
+  handleLoadedMetadata,
 }) => {
   return (
     <div className="relative w-full h-full overflow-hidden rounded-lg shadow-lg  p-0">
@@ -21,11 +19,11 @@ const VideoPlayer = ({
         <video
           ref={videoRef}
           className="w-full"
-          onClick={togglePlay}
           playsInline
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
         />
       </div>
-
     </div>
   );
 };
