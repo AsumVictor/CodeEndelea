@@ -44,7 +44,7 @@ export const get_code_at = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json(result);
   } catch (error) {
-    console.error("Error initializing upload:", err);
+    console.error("Error initializing upload:", error);
     return next(new ResponseError(error.message, 400));
   }
 });

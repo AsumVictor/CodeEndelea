@@ -11,7 +11,7 @@ export const get_video_data = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json(video);
   } catch (error) {
-    console.error("Error initializing upload:", err);
+    console.error("Error initializing upload:", error);
     return next(new ResponseError(error.message, 400));
   }
 });
