@@ -133,6 +133,27 @@ export default function CodeEditor() {
     dispatch(setCode(LANGUAGE_CONFIG[language].defaultCode));
   };
 
+  // Comment feature
+  const handleAddComment = () => {
+    const editor = editorRef.current;
+
+    if (!editor) return;
+
+    const selection = editor.getSelection();
+    const selectedText = editor.getModel()?.getValueInRange(selection);
+
+    if (selectedText) {
+      const existingComments = JSON.parse(
+        localStorage.getItem("monacoComments") || "[]"
+      );
+      existingComments.push(selectedText);
+      localStorage.setItem("monacoComments", JSON.stringify(existingComments));
+      alert("Comment saved!");
+    } else {
+      alert("No text selected!");
+    }
+  };
+
   return (
     <div className="h-full w-full bg-[#0a0a0f]/80 overflow-hidden">
       <div className=" py-2 px-2 relative h-full w-full">
@@ -194,6 +215,19 @@ export default function CodeEditor() {
                   ))}
                 </SelectContent>
               </Select>
+
+              <Button
+                onClick={handleRunCode}
+                disabled={isRunning}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 rounded-[10px]"
+              >
+                {isRunning ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Play className="mr-2 h-4 w-4" />
+                )}
+                Run Code
+              </Button>
 
               <Select
                 value={theme}
@@ -265,18 +299,12 @@ export default function CodeEditor() {
                 <TerminalIcon className="h-4 w-4" />
               </Button>
 
-              <Button
-                onClick={handleRunCode}
-                disabled={isRunning}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 rounded-[10px]"
+              <button
+                onClick={handleAddComment}
+                className="bg-blue-500 text-white p-2 rounded mb-2"
               >
-                {isRunning ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Play className="mr-2 h-4 w-4" />
-                )}
-                Run Code
-              </Button>
+                Add Comment
+              </button>
             </div>
           </header>
         </div>
