@@ -2,7 +2,6 @@ import db_connect from "./config/db.js";
 import app from "./app.js";
 import dotenv from "dotenv";
 
-
 // connect to environment variables
 if (
   process.env.NODE_ENV !== "PRODUCTION" ||
@@ -18,6 +17,7 @@ process.on("unCaughtException", (err) => {
   console.log(`Error: => ${err.message}`);
   console.log("Server shutting down");
 });
+
 
 const server = app.listen(process.env.PORT, async (err) => {
   // connect to database

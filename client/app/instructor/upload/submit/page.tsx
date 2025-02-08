@@ -110,6 +110,27 @@ export default function UploadPage({
       });
 
       setUploadComplete(true);
+
+      // upload all code
+      const code_space = JSON.parse(
+        window.localStorage.getItem(`code_${id}`) || `{}`
+      );
+
+      let progress = 0;
+      for (let i = 0; i < code_space.length; i++) {
+        let [time, state] = code_space[i];
+        const { canvasState, editorState, screenState } = state;
+
+        await axios.post("http://localhost:8081/api/v1/code/upload", {
+          vid_id: id,
+          time_stamp: time,
+          editor_state: editorState,
+          canvas_state: canvasState,
+          screen_state: screenState,
+        });
+
+        progress = i;
+      }
     } catch (error) {
       console.error("Error uploading files:", error);
       alert("File upload failed!");

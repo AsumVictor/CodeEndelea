@@ -8,8 +8,8 @@ function Page({ searchParams }: { searchParams: { id?: string } }) {
   const { id } = searchParams;
 
   const editorState = useSelector((state: RootState) => state.codeEditor);
-  const screenState = useSelector((state: RootState) => state.codeEditor);
-  const canvasState = useSelector((state: RootState) => state.codeEditor);
+  const screenState = useSelector((state: RootState) => state.splitScreen);
+  const canvasState = useSelector((state: RootState) => state.canvasEditor);
 
   const [seconds, setSeconds] = useState(0);
   const [start, setStart] = useState(false); // Declare a start state
@@ -30,7 +30,7 @@ function Page({ searchParams }: { searchParams: { id?: string } }) {
 
     // Save the updated history to localStorage
     localStorage.setItem(
-      "stateHistory",
+      `code_${id}`,
       JSON.stringify(Array.from(updatedHistory.entries()))
     ); // Convert Map to Array for storage
 
@@ -50,9 +50,8 @@ function Page({ searchParams }: { searchParams: { id?: string } }) {
   }, [start]); // Re-run the effect when 'start' changes
 
   useEffect(() => {
-    if (seconds % 3 === 0 && seconds !== 0) {
+    if (seconds % 1 === 0 && seconds !== 0) {
       updateStateHistory();
-      console.log(window.localStorage.getItem("stateHistory"));
     }
   }, [seconds]);
 

@@ -48,6 +48,7 @@
     "embla-carousel-react": "8.5.1",
     "fabric": "^6.5.4",
     "framer-motion": "latest",
+    "hls.js": "^1.5.20",
     "html2canvas": "^1.4.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",

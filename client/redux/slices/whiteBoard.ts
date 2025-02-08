@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import * as fabric from "fabric";
 
-interface CanvasEditorState {
+export interface CanvasEditorState {
   tool: string;
   color: string;
   size: number;
@@ -31,10 +31,16 @@ const canvasEditorSlice = createSlice({
     setContent: (state, action: PayloadAction<string>) => {
       state.content = action.payload;
     },
+    setCanvasStateTo: (state, action: PayloadAction<CanvasEditorState>) => {
+      state.tool = action.payload.tool;
+      state.color = action.payload.color;
+      state.size = action.payload.size;
+      state.content = action.payload.content;
+    },
   },
 });
 
-export const { setTool, setColor, setSize, setContent } =
+export const { setTool, setColor, setSize, setContent, setCanvasStateTo } =
   canvasEditorSlice.actions;
 
 export default canvasEditorSlice.reducer;

@@ -19,7 +19,7 @@ const corsOptions = {
         }
       : "*",
   credentials: true,
-  methods: ["POST","GET"],
+  methods: ["POST"],
 };
 
 app.use(cors(corsOptions));
@@ -46,7 +46,7 @@ app.all("*", (req, res, next) => {
   if (req.path == "/") {
     res.json("Home");
   } else {
-    res.json("Invalid");
+    res.json("Invalid path home");
   }
   next();
 });
