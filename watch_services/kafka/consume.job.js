@@ -24,6 +24,3 @@ export const consumeMessages = async (topic, callback) => {
     },
   });
 };
-
-// // Example usage
-// consumeMessages("update-url");
