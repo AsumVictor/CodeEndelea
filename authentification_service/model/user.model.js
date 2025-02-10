@@ -2,55 +2,24 @@ import mongoose from "mongoose";
 
 const videoSchema = new mongoose.Schema(
   {
-    title: {
+    user_name: {
+      required: [true, "Username is required!"],
       type: String,
-      required: [true, "title is required to filled"],
+      unique: [true, "Username is already taken"],
     },
-    description: {
+    email: {
       type: String,
-      required: [true, "description is required to filled"],
+      required: [true, "Email is required!"],
+      unique: [true, "Email is already unique"],
+      validate: () => {
+        return true;
+      },
     },
-    length: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
-    exercise_timestamps: {
-      type: [Number],
-      required: false,
-      default: [],
-    },
-    screen_url: {
+    password: {
       type: String,
-      // required: [true, "Screen Video url is required to create a video"],
-      default: null,
-    },
-    camera_url: {
-      type: String,
-      // required: [true, "Camera video url is required to create a video"],
-      default: null,
-    },
-    screen_hsl_url: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    camera_hsl_url: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    reactions: {
-      type: [Number],
-      required: false,
-      default: [0, 0, 0, 0],
-
-      // not understand,kind of, moderate, understand, filled
-    },
-    is_publish: {
-      type: Boolean,
-      default: false,
-    },
+      required: [true, "Password is required"],
+      
+    }
   },
   {
     timestamps: true,
