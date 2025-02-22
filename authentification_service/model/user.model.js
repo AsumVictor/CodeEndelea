@@ -74,7 +74,7 @@ userSchema.methods.hashToken = async function (token) {
 
 // compare token
 userSchema.methods.compareToken = async function (token) {
-  return await bcrypt.compare(token, this.resetPasswordToken);
+  return await bcrypt.compare(token, this.reset_password_token);
 };
 
 export default mongoose.model("user-v1", userSchema);
