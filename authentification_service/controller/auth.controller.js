@@ -39,6 +39,7 @@ export const register = catchAsyncError(async (req, res, next) => {
 
 
     // create a new user
+    
     // return new access and refresh token to the 
 
   } catch (error) {
